@@ -157,6 +157,15 @@ public class CityGenerator : MonoBehaviour {
         }
         return cityDict;
     }
+    public void Start() {
+        // Get API Call
+
+        cityInfo = GetBuildings();
+        subnetGroups = GetSubnetGroups(cityInfo);
+
+        maxBuildings = cityInfo.data.Count;
+        Debug.Log(maxBuildings);
+    }
     public CityInfo GetBuildings()
     {
         //Valid: "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0"
@@ -172,7 +181,14 @@ public class CityGenerator : MonoBehaviour {
     }
     public void GenerateStreetsVerySmall()
     {
-        Debug.Log("Very Small");
+        Debug.Log("Very Smallll");
+
+        // Get API Call
+
+        cityInfo = GetBuildings();
+        subnetGroups = GetSubnetGroups(cityInfo);
+        maxBuildings = cityInfo.data.Count;
+
         if (!cityMaker)
             cityMaker = GameObject.Find("City-Maker");
 
@@ -180,25 +196,56 @@ public class CityGenerator : MonoBehaviour {
             DestroyImmediate(cityMaker);
 
         cityMaker = new GameObject("City-Maker");
-                
-        GameObject block;
+        GenerateCustomStreets();
 
-        distCenter = 150;
-        int nb = 0;
+        // GameObject block;
 
-        int le = largeBlocks.Length;
-        nb = UnityEngine.Random.Range(0, le);
+        // distCenter = 150;
+        // int nb = 0;
+
+        // int le = largeBlocks.Length;
+        // nb = UnityEngine.Random.Range(0, le);
   
-        block = (GameObject)Instantiate(largeBlocks[nb], new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), cityMaker.transform);
+        // block = (GameObject)Instantiate(largeBlocks[nb], new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), cityMaker.transform);
 
 
-        center = new Vector3(0,0,0);
+        // center = new Vector3(0,0,0);
 
-        block = (GameObject)Instantiate(miniBorder, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), cityMaker.transform);
+        // block = (GameObject)Instantiate(miniBorder, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), cityMaker.transform);
 
-        block.transform.SetParent(cityMaker.transform);
+        // block.transform.SetParent(cityMaker.transform);
     }
+    public void GenerateCustomStreets() {
+        foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
+        {
+            //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
+            Debug.Log(string.Format("Subnet = {0}", kvp.Key));
+            // foreach(var x in kvp.Value) {
+            //     Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
+            // }
+            currentSubnet = kvp.Value;
+            currentBuildingIdx = 0;
+            // GenerateSubnet();
+            GameObject block;
 
+            distCenter = 150;
+            int nb = 0;
+
+            int le = largeBlocks.Length;
+            nb = UnityEngine.Random.Range(0, le);
+
+            block = (GameObject)Instantiate(largeBlocks[nb], new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), cityMaker.transform);
+
+
+            center = new Vector3(0,0,0);
+
+            block = (GameObject)Instantiate(miniBorder, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), cityMaker.transform);
+
+            block.transform.SetParent(cityMaker.transform);
+            // break;
+        }
+
+    }
     public void GenerateStreetsSmall()
     {
         Debug.Log("Small");
@@ -452,9 +499,7 @@ public class CityGenerator : MonoBehaviour {
             break;
         }
     }
-    public void GenerateCustomStreets(){
 
-    }
     public void GenerateSubnet(){
         tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == ("Marcador")).ToArray();
 
@@ -482,12 +527,7 @@ public class CityGenerator : MonoBehaviour {
     }
     public void GenerateAllBuildings()
     {
-        // Get API Call
-
-        cityInfo = GetBuildings();
-        subnetGroups = GetSubnetGroups(cityInfo);
         
-        maxBuildings = cityInfo.data.Count;
 
 
         _BB = new int[BB.Length];
