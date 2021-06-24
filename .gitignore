@@ -35,3 +35,7 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+
+*
+!.gitignore
+!*/Fantastic City Generator/Scripts/
