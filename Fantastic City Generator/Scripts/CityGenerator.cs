@@ -216,8 +216,15 @@ public class CityGenerator : MonoBehaviour {
         // block.transform.SetParent(cityMaker.transform);
     }
     public void GenerateCustomStreets() {
+        int count = 0;
         foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
         {
+
+            // var subnet = (GameObject) Instantiate(new GameObject(string.Format("Subnet_{0}", count + 1)), new Vector3(0, 0, count*600), Quaternion.Euler(0, 0, 0), cityMaker.transform);
+            var subnet = new GameObject(string.Format("Subnet_{0}", count + 1));
+            subnet.transform.parent = cityMaker.transform;
+            subnet.transform.position += new Vector3(0f, 0f, count*600f);
+            // subnet.transform.SetParent(cityMaker.transform);
             //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
             Debug.Log(string.Format("Subnet = {0}", kvp.Key));
             // foreach(var x in kvp.Value) {
@@ -234,14 +241,17 @@ public class CityGenerator : MonoBehaviour {
             int le = largeBlocks.Length;
             nb = UnityEngine.Random.Range(0, le);
 
-            block = (GameObject)Instantiate(largeBlocks[nb], new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), cityMaker.transform);
-
+            block = (GameObject)Instantiate(largeBlocks[nb], new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), subnet.transform);
+            block.transform.SetParent(subnet.transform);
+            block.transform.localPosition = Vector3.zero;
 
             center = new Vector3(0,0,0);
 
-            block = (GameObject)Instantiate(miniBorder, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), cityMaker.transform);
+            block = (GameObject)Instantiate(miniBorder, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), subnet.transform);
+            block.transform.SetParent(subnet.transform);
+            block.transform.localPosition = Vector3.zero;
 
-            block.transform.SetParent(cityMaker.transform);
+            count++;
             // break;
         }
 
@@ -561,11 +571,11 @@ public class CityGenerator : MonoBehaviour {
 
         nB = 0;
 
-        // CreateBuildingsInSuperBlocks();
-        // CreateBuildingsInBlocks();
-        // CreateBuildingsInLines();
-        // CreateBuildingsInDouble();
-        GenerateCustomBuildings(subnetGroups);
+        CreateBuildingsInSuperBlocks();
+        CreateBuildingsInBlocks();
+        CreateBuildingsInLines();
+        CreateBuildingsInDouble();
+        // GenerateCustomBuildings(subnetGroups);
 
         Debug.ClearDeveloperConsole();
         Debug.Log(nB + " buildings were created");
