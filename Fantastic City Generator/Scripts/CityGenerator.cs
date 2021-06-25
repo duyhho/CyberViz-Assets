@@ -237,7 +237,7 @@ public class CityGenerator : MonoBehaviour {
             // GenerateSubnet();
             GameObject block;
 
-            distCenter = 150;
+            distCenter = 200;
             int nb = 0;
 
             int le = largeBlocks.Length;
@@ -513,6 +513,16 @@ public class CityGenerator : MonoBehaviour {
 
             GenerateSubnet(count);
             count++;
+
+            int remaining = 0;
+            for (int i = 0; i < customRendered.Length; i++) {
+                if (customRendered[i] == false) {
+                    Debug.Log(string.Format("{0} is not rendered", currentSubnet[i].ipAddress));
+                    remaining++;
+                }
+            }
+            Debug.Log(string.Format("{0} are left", remaining));
+            
             break;
         }
     }
@@ -734,7 +744,7 @@ public class CityGenerator : MonoBehaviour {
             for (int i = 0; i < customRendered.Length; i++) {
                 Building building = currentSubnet[i];
                 if (customRendered[i] == false) {
-                    if (Int32.Parse(building.buildingSize) > 10){
+                    if (Int32.Parse(building.buildingSize) > 25){
                     // Debug.Log(building.rendered);
                         Debug.Log(string.Format("rendering big building for {0}", building.ipAddress));
                         customRendered[i] = true;
@@ -744,13 +754,7 @@ public class CityGenerator : MonoBehaviour {
                 }
             }
         }
-        int remaining = 0;
-        for (int i = 0; i < customRendered.Length; i++) {
-            if (customRendered[i] == false) {
-                remaining++;
-            }
-        }
-        Debug.Log(string.Format("{0} are left", remaining));
+        
 
         // pBuilding.name = string.Format("IP_{0}", nB);
         // Debug.Log(buildingIP);
