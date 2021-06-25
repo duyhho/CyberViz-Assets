@@ -81,8 +81,11 @@ public class CityGenerator : MonoBehaviour {
 
     private Dictionary<string, List<Building>> subnetGroups;
     private CityInfo cityInfo;
+
     public List<Building> currentSubnet;
     int currentBuildingIdx = 0;
+    int currentSubnetSize = 0;
+    bool[] customRendered;
     /*
     public void Update()
     {
@@ -128,7 +131,6 @@ public class CityGenerator : MonoBehaviour {
         public string buildingSize;
         [JsonProperty(PropertyName = "Criticality")]
         public string criticality;
-
     }
     [Serializable]
     public class CityInfo
@@ -226,7 +228,7 @@ public class CityGenerator : MonoBehaviour {
             subnet.transform.position += new Vector3(0f, 0f, count*600f);
             // subnet.transform.SetParent(cityMaker.transform);
             //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
-            Debug.Log(string.Format("Subnet = {0}", kvp.Key));
+            // Debug.Log(string.Format("Subnet = {0}", kvp.Key));
             // foreach(var x in kvp.Value) {
             //     Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
             // }
@@ -495,26 +497,32 @@ public class CityGenerator : MonoBehaviour {
     }
 
     private GameObject pB;
-    public void GenerateCustomBuildings(Dictionary<string, List<Building>> subnetDict) {
-        foreach (KeyValuePair<string, List<Building>> kvp in subnetDict)
+    public void GenerateCustomBuildings() {
+        int count = 1;
+        foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
         {
             //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
-            Debug.Log(string.Format("Subnet = {0}", kvp.Key));
+            // Debug.Log(string.Format("Subnet = {0}", kvp.Key));
             // foreach(var x in kvp.Value) {
             //     Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
             // }
             currentSubnet = kvp.Value;
             currentBuildingIdx = 0;
-            // GenerateSubnet();
+            currentSubnetSize = currentSubnet.Count;
+            customRendered = new bool[currentSubnetSize];
+
+            GenerateSubnet(count);
+            count++;
             break;
         }
     }
 
-    public void GenerateSubnet(){
-        tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == ("Marcador")).ToArray();
-
+    public void GenerateSubnet(int subnetIdx){
+        tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => (g.name == ("Marcador")) && g.transform.parent.parent.parent.name == string.Format("Subnet_{0}", subnetIdx)).ToArray();
+        // tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => (g.name == ("Marcador"))).ToArray();
+        Debug.Log(currentSubnetSize);
         foreach (GameObject lines in tempArray) {
-
+            // Debug.Log(lines.transform.parent.parent.parent.name);
             _residential = (residential < 15 && Vector3.Distance(center, lines.transform.position) > 400 && UnityEngine.Random.Range(0, 100) < 30);
 
             foreach (Transform child in lines.transform) {
@@ -571,11 +579,11 @@ public class CityGenerator : MonoBehaviour {
 
         nB = 0;
 
-        CreateBuildingsInSuperBlocks();
-        CreateBuildingsInBlocks();
-        CreateBuildingsInLines();
-        CreateBuildingsInDouble();
-        // GenerateCustomBuildings(subnetGroups);
+        // CreateBuildingsInSuperBlocks();
+        // CreateBuildingsInBlocks();
+        // CreateBuildingsInLines();
+        // CreateBuildingsInDouble();
+        GenerateCustomBuildings();
 
         Debug.ClearDeveloperConsole();
         Debug.Log(nB + " buildings were created");
@@ -620,6 +628,9 @@ public class CityGenerator : MonoBehaviour {
         GameObject pBuilding;
 
         pB = null;
+
+        string buildingIP = "";
+
         int numB;
         int t = 0;
         float pWidth = 0;
@@ -660,6 +671,16 @@ public class CityGenerator : MonoBehaviour {
                 {
                     _EC[numB] += 1;
                     pB = EC[numB];
+                    // foreach(Building building in currentSubnet) {
+                    //     if (Int32.Parse(building.buildingSize) > 10){
+                    //         if (building.rendered == false) {
+                    //             Debug.Log(string.Format("rendering big building! EC for {0}", building.ipAddress));
+                    //             building.rendered = true;
+                    //             buildingIP = building.ipAddress;
+
+                    //         }
+                    //     }
+                    // }
                     //q = _EC[numB];
                     break;
                 }
@@ -693,11 +714,48 @@ public class CityGenerator : MonoBehaviour {
             }
 
         }
-
         pBuilding = (GameObject)Instantiate(pB, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0));
-        pBuilding.name = pBuilding.name;
+        // pBuilding.name = pBuilding.name;
+        if (pBuilding.name.Contains("EB")){
+            for (int i = 0; i < customRendered.Length; i++) {
+                Building building = currentSubnet[i];
+                if (customRendered[i] == false) {
+                    if (Int32.Parse(building.buildingSize) <= 10){
+                    // Debug.Log(building.rendered);
+                        Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
+                        customRendered[i] = true;
+                        buildingIP = building.ipAddress;
+                        break;
+                    }
+                }
+            }
+        }
+        else {
+            for (int i = 0; i < customRendered.Length; i++) {
+                Building building = currentSubnet[i];
+                if (customRendered[i] == false) {
+                    if (Int32.Parse(building.buildingSize) > 10){
+                    // Debug.Log(building.rendered);
+                        Debug.Log(string.Format("rendering big building for {0}", building.ipAddress));
+                        customRendered[i] = true;
+                        buildingIP = building.ipAddress;
+                        break;
+                    }
+                }
+            }
+        }
+        int remaining = 0;
+        for (int i = 0; i < customRendered.Length; i++) {
+            if (customRendered[i] == false) {
+                remaining++;
+            }
+        }
+        Debug.Log(string.Format("{0} are left", remaining));
 
-        // Debug.Log(pBuilding.name);
+        // pBuilding.name = string.Format("IP_{0}", nB);
+        // Debug.Log(buildingIP);
+        pBuilding.name = (buildingIP != "") ? string.Format("{0} - {1}", pBuilding.name, buildingIP) : string.Format("{0} - Unassigned", pBuilding.name);
+        Debug.Log(pBuilding.name);
         pBuilding.transform.SetParent(child.transform);
         pBuilding.transform.localPosition = new Vector3(-(pWidth * 0.5f), 0, 0);
         pBuilding.transform.localRotation = Quaternion.Euler(0, 0, 0);
@@ -756,6 +814,9 @@ public class CityGenerator : MonoBehaviour {
 
         }
 
+        if (pBuilding.name.Contains("Unassigned")){
+            DestroyImmediate(pBuilding);
+        }
     }
 
     int RandRotation()
@@ -834,7 +895,7 @@ public class CityGenerator : MonoBehaviour {
         }
     }
     public void CreateLaser(GameObject building, int idx){
-        Debug.Log(building);
+        // Debug.Log(building);
         // Vector3 buildingCenter = GetCenter(building);
         float buildingHeight = GetHeight(building);
         float buildingY = GetY(building);
