@@ -252,7 +252,6 @@ public class CityGenerator : MonoBehaviour {
             block.transform.localPosition = Vector3.zero;
 
             count++;
-            hello
             // break;
         }
 
