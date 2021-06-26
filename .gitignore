@@ -6,3 +6,4 @@
 !*.cs
 !.gitignore
 !*.unity
+!Fantastic City Generator/Roads/Prefab/*.prefab

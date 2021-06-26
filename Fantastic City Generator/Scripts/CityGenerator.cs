@@ -602,7 +602,10 @@ public class CityGenerator : MonoBehaviour {
         foreach(GameObject lines in tempArray){
             // Debug.Log(Vector3.Distance(center, lines.GetComponentsInChildren<Transform>()[1].position));
             foreach (Transform child in lines.transform) {
-                Debug.Log(Vector3.Distance(center, child.transform.position));
+                _residential = (residential < 15 && Vector3.Distance(center, lines.transform.position) > 400 && UnityEngine.Random.Range(0, 100) < 30);
+                _residential = false;
+                // _residential = true;
+                // Debug.Log(Vector3.Distance(center, child.transform.position));
                 if (child.name == "E") {
                     CreateBuildingsInCorners(child.gameObject);
 
@@ -610,36 +613,10 @@ public class CityGenerator : MonoBehaviour {
                 else
                 {
                     CreateBuildingsInLineCustom(child.gameObject, 90f);
-
                 }
             }
             // break;
         }
-        // tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => (g.name == ("Marcador"))).ToArray();
-        // Debug.Log(currentSubnetSize);
-        // foreach (GameObject lines in tempArray) {
-        //     // Debug.Log(lines.transform.parent.parent.parent.name);
-        //     _residential = (residential < 15 && Vector3.Distance(center, lines.transform.position) > 400 && UnityEngine.Random.Range(0, 100) < 30);
-        //     _residential = true;
-        //     // Debug.Log(string.Format("Residential: {0}", _residential));
-        //     foreach (Transform child in lines.transform) {
-        //         Debug.Log(Vector3.Distance(center, child.transform.position));
-        //         if (child.name == "E") {
-        //             CreateBuildingsInCorners(child.gameObject);
-
-        //         }
-        //         else
-        //         {
-        //             CreateBuildingsInLineCustom(child.gameObject, 90f);
-
-        //         }
-        //         // break;
-    
-        //     }
-        //     break;
-        // }
-
-            // _residential = false;
     }
     public void CreateBuildingsInLines() {
 
