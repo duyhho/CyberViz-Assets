@@ -237,7 +237,7 @@ public class CityGenerator : MonoBehaviour {
             // GenerateSubnet();
             GameObject block;
 
-            distCenter = 200;
+            distCenter = 150;
             int nb = 0;
 
             int le = largeBlocks.Length;
@@ -528,30 +528,8 @@ public class CityGenerator : MonoBehaviour {
     }
 
     public void GenerateSubnet(int subnetIdx){
-        tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => (g.name == ("Marcador")) && g.transform.parent.parent.parent.name == string.Format("Subnet_{0}", subnetIdx)).ToArray();
-        // tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => (g.name == ("Marcador"))).ToArray();
-        Debug.Log(currentSubnetSize);
-        foreach (GameObject lines in tempArray) {
-            // Debug.Log(lines.transform.parent.parent.parent.name);
-            _residential = (residential < 15 && Vector3.Distance(center, lines.transform.position) > 400 && UnityEngine.Random.Range(0, 100) < 30);
-            _residential = true;
-            Debug.Log(string.Format("Residential: {0}", _residential));
-            foreach (Transform child in lines.transform) {
-
-                if (child.name == "E") {
-                    CreateBuildingsInCorners(child.gameObject);
-
-                }
-                else
-                {
-                    CreateBuildingsInLineCustom(child.gameObject, 90f);
-
-                }
-    
-            }
-        }
-
-            _residential = false;
+        CreateBuildingsInLinesCustom(subnetIdx);
+        // CreateBuildingsInBlocksCustom(subnetIdx);
     }
     public void GenerateAllBuildings()
     {
@@ -603,8 +581,66 @@ public class CityGenerator : MonoBehaviour {
 
     }
 
+    // public static int CompareLand(GameObject go1, GameObject go2)
+    // {
+    //     // TODO: Comparison logic :)
+    //     float distance1 = Vector3.Distance(CityGenerator.center, go1.transform.position);
+    //     float distance2 = Vector3.Distance(CityGenerator.center, go2.transform.position);
 
+    //     return distance1.CompareTo(distance2);
+    // }
+    public void CreateBuildingsInLinesCustom(int subnetIdx){
+        tempArray = GameObject.FindObjectsOfType(typeof(GameObject))
+                                .Select(g => g as GameObject)
+                                .Where(g => (g.name == ("Marcador")) && 
+                                        g.transform.parent.parent.parent.name == 
+                                        string.Format("Subnet_{0}", subnetIdx))
+                                
+                                .OrderBy(g=> Vector3.Distance(center, g.GetComponentsInChildren<Transform>()[1].position))
+                                .ToArray();
+        // tempArray.Sort(CompareLand);
+        foreach(GameObject lines in tempArray){
+            // Debug.Log(Vector3.Distance(center, lines.GetComponentsInChildren<Transform>()[1].position));
+            foreach (Transform child in lines.transform) {
+                Debug.Log(Vector3.Distance(center, child.transform.position));
+                if (child.name == "E") {
+                    CreateBuildingsInCorners(child.gameObject);
 
+                }
+                else
+                {
+                    CreateBuildingsInLineCustom(child.gameObject, 90f);
+
+                }
+            }
+            // break;
+        }
+        // tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => (g.name == ("Marcador"))).ToArray();
+        // Debug.Log(currentSubnetSize);
+        // foreach (GameObject lines in tempArray) {
+        //     // Debug.Log(lines.transform.parent.parent.parent.name);
+        //     _residential = (residential < 15 && Vector3.Distance(center, lines.transform.position) > 400 && UnityEngine.Random.Range(0, 100) < 30);
+        //     _residential = true;
+        //     // Debug.Log(string.Format("Residential: {0}", _residential));
+        //     foreach (Transform child in lines.transform) {
+        //         Debug.Log(Vector3.Distance(center, child.transform.position));
+        //         if (child.name == "E") {
+        //             CreateBuildingsInCorners(child.gameObject);
+
+        //         }
+        //         else
+        //         {
+        //             CreateBuildingsInLineCustom(child.gameObject, 90f);
+
+        //         }
+        //         // break;
+    
+        //     }
+        //     break;
+        // }
+
+            // _residential = false;
+    }
     public void CreateBuildingsInLines() {
 
         tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == ("Marcador")).ToArray();
@@ -1038,7 +1074,79 @@ public class CityGenerator : MonoBehaviour {
         }
 
     }
+    public void CreateBuildingsInBlocksCustom(int subnetIdx)
+    {
 
+        int numB = 0;
+
+        tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == ("Blocks") && g.transform.parent.parent.parent.name == string.Format("Subnet_{0}", subnetIdx)).ToArray();
+
+        foreach (GameObject bks in tempArray)
+        {
+
+            foreach (Transform bk in bks.transform)
+            {
+
+                if (UnityEngine.Random.Range(0, 20) > 5)
+                {
+
+                    int lp = 0;
+                    do
+                    {
+                        lp++;
+                        numB = UnityEngine.Random.Range(0, BK.Length);
+                        if (_BK[numB] == 0) break;
+                        if (lp > 125 && _BK[numB] <= 1) break;
+                        if (lp > 150 && _BK[numB] <= 2) break;
+                        if (lp > 200 && _BK[numB] <= 3) break;
+                        if (lp > 250) break;
+                    } while (lp < 300);
+
+                    _BK[numB] += 1;
+
+                    GameObject newObject = Instantiate(BK[numB], bk.position, bk.rotation, bk);             
+                    CreateColor(newObject);
+                    nB++;
+
+                }
+                else
+                {
+
+                    for (int i = 1; i <= 4; i++)
+                    {
+                        GameObject nc = new GameObject("E");
+                        nc.transform.SetParent(bk);
+                        if (i == 1)
+                        {
+                            nc.transform.localPosition = new Vector3(-36, 0, -36);
+                            nc.transform.localRotation = Quaternion.Euler(0, 180, 0);
+                        }
+                        if (i == 2)
+                        {
+                            nc.transform.localPosition = new Vector3(-36, 0, 36);
+                            nc.transform.localRotation = Quaternion.Euler(0, 270, 0);
+                        }
+                        if (i == 3)
+                        {
+                            nc.transform.localPosition = new Vector3(36, 0, 36);
+                            nc.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                        }
+                        if (i == 4)
+                        {
+                            nc.transform.localPosition = new Vector3(36, 0, -36);
+                            nc.transform.localRotation = Quaternion.Euler(0, 90, 0);
+                        }
+                        CreateBuildingsInCorners(nc);
+
+                    }
+                }
+
+
+            }
+          
+        }
+
+    }
     public void CreateBuildingsInSuperBlocks()
     {
 
