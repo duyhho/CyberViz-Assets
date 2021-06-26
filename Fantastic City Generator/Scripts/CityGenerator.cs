@@ -746,7 +746,8 @@ public class CityGenerator : MonoBehaviour {
         // pBuilding.name = string.Format("IP_{0}", nB);
         // Debug.Log(buildingIP);
         // pBuilding.name = (buildingIP != "") ? string.Format("{0} - {1}", pBuilding.name, buildingIP) : string.Format("{0} - Unassigned", pBuilding.name);
-        pBuilding.name = string.Format("{0} - {1}", pBuilding.name, AssignIP(pBuilding));
+        Building assignedBuilding = AssignIP(pBuilding);
+        pBuilding.name = string.Format("{0} - {1}", pBuilding.name, assignedBuilding.ipAddress);
         Debug.Log(pBuilding.name);
         pBuilding.transform.SetParent(child.transform);
         pBuilding.transform.localPosition = new Vector3(-(pWidth * 0.5f), 0, 0);
@@ -822,6 +823,8 @@ public class CityGenerator : MonoBehaviour {
     }
     public string AssignIP(GameObject pBuilding) {
         string buildingIP = "Unassigned";
+        Building buildingProfile = new Building();
+        buildingProfile.ipAddress = "Unassigned";
         if (pBuilding.name.Contains("EB")){
             for (int i = 0; i < customRendered.Length; i++) {
                 Building building = currentSubnet[i];
@@ -831,6 +834,7 @@ public class CityGenerator : MonoBehaviour {
                         // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
                         customRendered[i] = true;
                         buildingIP = building.ipAddress;
+                        buildingProfile = building;
                         break;
                     }
                 }
@@ -846,6 +850,7 @@ public class CityGenerator : MonoBehaviour {
                         // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
                         customRendered[i] = true;
                         buildingIP = building.ipAddress;
+                        buildingProfile = building;
                         break;
                     }
                 }
@@ -861,6 +866,7 @@ public class CityGenerator : MonoBehaviour {
                         // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
                         customRendered[i] = true;
                         buildingIP = building.ipAddress;
+                        buildingProfile = building;
                         break;
                     }
                 }
@@ -876,6 +882,7 @@ public class CityGenerator : MonoBehaviour {
                         // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
                         customRendered[i] = true;
                         buildingIP = building.ipAddress;
+                        buildingProfile = building;
                         break;
                     }
                 }
@@ -883,8 +890,9 @@ public class CityGenerator : MonoBehaviour {
         }
         else {
             buildingIP = "Unassigned";
+
         }
-        return buildingIP;
+        return buildingProfile;
 
     }
     public void CreateColor(GameObject building){
@@ -1467,7 +1475,8 @@ public class CityGenerator : MonoBehaviour {
 
 
                     // pBuilding[index].name = pBuilding[index].name;
-                    pBuilding[index].name = string.Format("{0} - {1}", pBuilding[index].name, AssignIP(pBuilding[index]));
+                    Building assignedBuilding = AssignIP(pBuilding[index]);
+                    pBuilding[index].name = string.Format("{0} - {1}", pBuilding[index].name, assignedBuilding.ipAddress);
 					pBuilding[index].transform.SetParent (line.transform);
 
 					pBuilding [index].transform.localPosition = new Vector3 (0, 0, init + (pWidth * 0.5f));
