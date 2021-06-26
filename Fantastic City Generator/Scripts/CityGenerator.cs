@@ -895,9 +895,16 @@ public class CityGenerator : MonoBehaviour {
         return buildingProfile;
 
     }
-    public void CreateColor(GameObject building){
-        // Debug.Log("CreateColor()");
-        // Debug.Log(building);
+    public void CreateColor(GameObject building, Building buildingProfile){
+        Dictionary<string, int> colorMap =  new Dictionary<string, int>();
+        colorMap.Add("Low", 0);
+        colorMap.Add("Medium", 1);
+        colorMap.Add("High", 2);
+
+        if (buildingProfile.ipAddress != "Unassigned") {
+
+        }
+
         //Color Rendering
         MeshRenderer myRend;
         myRend = building.GetComponent<MeshRenderer>();
