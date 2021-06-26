@@ -532,14 +532,17 @@ public class CityGenerator : MonoBehaviour {
                 }
             }
             Debug.Log(string.Format("{0} are left", remaining));
-            DestroyUnassigned();
-            // break;
+            // DestroyUnassigned();
+            break;
         }
     }
 
     public void GenerateSubnet(int subnetIdx){
-        CreateBuildingsInLinesCustom(subnetIdx);
-        // CreateBuildingsInBlocksCustom(subnetIdx);
+        
+        // CreateBuildingsInSuperBlocksCustom(subnetIdx);
+        CreateBuildingsInBlocksCustom(subnetIdx);
+        // CreateBuildingsInLinesCustom(subnetIdx);
+        // CreateBuildingsInDoubleCustom(subnetIdx);
     }
     public void GenerateAllBuildings()
     {
@@ -558,16 +561,16 @@ public class CityGenerator : MonoBehaviour {
 
         _Materials = new Material[4];
 
-        _Materials[0] = (Material)Resources.Load("Atlas-Red", typeof(Material));
-        _Materials[1] = (Material)Resources.Load("Atlas-Blue", typeof(Material));
-        _Materials[2] = (Material)Resources.Load("Atlas-Yellow", typeof(Material));
+        _Materials[0] = (Material)Resources.Load("Atlas-Blue", typeof(Material));
+        _Materials[1] = (Material)Resources.Load("Atlas-Yellow", typeof(Material));
+        _Materials[2] = (Material)Resources.Load("Atlas-Red", typeof(Material));
         _Materials[3] = (Material)Resources.Load("Atlas-Gray", typeof(Material));
 
         _laserMaterials = new Material[4];
-        _laserMaterials[0] = (Material)Resources.Load("Materials/laserred", typeof(Material));
-        _laserMaterials[1] = (Material)Resources.Load("Materials/laserwhite", typeof(Material));
-        _laserMaterials[2] = (Material)Resources.Load("Materials/laseryellow", typeof(Material));
-        _laserMaterials[3] = (Material)Resources.Load("Materials/laserblue", typeof(Material));
+        _laserMaterials[0] = (Material)Resources.Load("Materials/laserwhite", typeof(Material));
+        _laserMaterials[1] = (Material)Resources.Load("Materials/laseryellow", typeof(Material));
+        _laserMaterials[2] = (Material)Resources.Load("Materials/laserred", typeof(Material));
+        // _laserMaterials[3] = (Material)Resources.Load("Materials/laserblue", typeof(Material));
 
         residential = 0;
 
@@ -599,7 +602,7 @@ public class CityGenerator : MonoBehaviour {
 
     //     return distance1.CompareTo(distance2);
     // }
-    public void CreateBuildingsInLinesCustom(int subnetIdx){
+    public void CreateBuildingsInLinesCustom(int subnetIdx){ //work on this shit//
         tempArray = GameObject.FindObjectsOfType(typeof(GameObject))
                                 .Select(g => g as GameObject)
                                 .Where(g => (g.name == ("Marcador")) &&
@@ -754,7 +757,7 @@ public class CityGenerator : MonoBehaviour {
         pBuilding.transform.localRotation = Quaternion.Euler(0, 0, 0);
         //Color Rendering
 
-        CreateColor(pBuilding);
+        CreateColor(pBuilding, assignedBuilding);
 
         nB++;
 
@@ -821,7 +824,7 @@ public class CityGenerator : MonoBehaviour {
      
      
     }
-    public string AssignIP(GameObject pBuilding) {
+    public Building AssignIP(GameObject pBuilding) {
         string buildingIP = "Unassigned";
         Building buildingProfile = new Building();
         buildingProfile.ipAddress = "Unassigned";
@@ -836,6 +839,57 @@ public class CityGenerator : MonoBehaviour {
                         buildingIP = building.ipAddress;
                         buildingProfile = building;
                         break;
+                    }
+                }
+            }
+        }
+        else if (pBuilding.name.Contains("QD")){
+            // Debug.Log("in " + pBuilding.name);
+            if (pBuilding.name.Contains("14")){
+                for (int i = 0; i < customRendered.Length; i++) {
+                    Building building = currentSubnet[i];
+                    if (customRendered[i] == false) {
+                        int buildingSize = Int32.Parse(building.buildingSize);
+                        if (buildingSize >= 10 && buildingSize <= 20 ){
+                        // Debug.Log(building.rendered);
+                            // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
+                            customRendered[i] = true;
+                            buildingIP = building.ipAddress;
+                            buildingProfile = building;
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (pBuilding.name.Contains("10") || pBuilding.name.Contains("12") || pBuilding.name.Contains("13")){
+                for (int i = 0; i < customRendered.Length; i++) {
+                    Building building = currentSubnet[i];
+                    if (customRendered[i] == false) {
+                        int buildingSize = Int32.Parse(building.buildingSize);
+                        if (buildingSize >= 5 && buildingSize <= 10 ){
+                        // Debug.Log(building.rendered);
+                            // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
+                            customRendered[i] = true;
+                            buildingIP = building.ipAddress;
+                            buildingProfile = building;
+                            break;
+                        }
+                    }
+                }
+            }
+            else {
+                for (int i = 0; i < customRendered.Length; i++) {
+                    Building building = currentSubnet[i];
+                    if (customRendered[i] == false) {
+                        int buildingSize = Int32.Parse(building.buildingSize);
+                        if (buildingSize < 5){
+                        // Debug.Log(building.rendered);
+                            // Debug.Log(string.Format("rendering small QD building for {0}", building.ipAddress));
+                            customRendered[i] = true;
+                            buildingIP = building.ipAddress;
+                            buildingProfile = building;
+                            break;
+                        }
                     }
                 }
             }
@@ -888,22 +942,98 @@ public class CityGenerator : MonoBehaviour {
                 }
             }
         }
+        else if (pBuilding.name.Contains("SB")){
+            Debug.Log("in " + pBuilding.name);
+
+            for (int i = 0; i < customRendered.Length; i++) {
+                Building building = currentSubnet[i];
+                int buildingSize = Int32.Parse(building.buildingSize);
+
+                if (buildingSize >= 40){
+                    if (customRendered[i] == false) {
+                        // Debug.Log(building.rendered);
+                            Debug.Log(string.Format("rendering superbig building for {0}", building.ipAddress));
+                            customRendered[i] = true;
+                            buildingIP = building.ipAddress;
+                            buildingProfile = building;
+                            break;
+                    }
+                }
+            }
+        }
+        else if (pBuilding.name.Contains("M-")){
+            Debug.Log("in " + pBuilding.name);
+            if (pBuilding.name.Contains("M-BC-005")){
+                for (int i = 0; i < customRendered.Length; i++) {
+                    Building building = currentSubnet[i];
+                    if (customRendered[i] == false) {
+                        int buildingSize = Int32.Parse(building.buildingSize);
+                        if (buildingSize > 25){
+                        // Debug.Log(building.rendered);
+                            // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
+                            customRendered[i] = true;
+                            buildingIP = building.ipAddress;
+                            buildingProfile = building;
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (pBuilding.name.Contains("017") || pBuilding.name.Contains("021") || pBuilding.name.Contains("005") || pBuilding.name.Contains("009") || pBuilding.name.Contains("015") || pBuilding.name.Contains("016") || pBuilding.name.Contains("022")){
+                for (int i = 0; i < customRendered.Length; i++) {
+                    Building building = currentSubnet[i];
+                    if (customRendered[i] == false) {
+                        int buildingSize = Int32.Parse(building.buildingSize);
+                        if (buildingSize >= 10 && buildingSize <= 20 ){
+                        // Debug.Log(building.rendered);
+                            // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
+                            customRendered[i] = true;
+                            buildingIP = building.ipAddress;
+                            buildingProfile = building;
+                            break;
+                        }
+                    }
+                }
+            }
+            else {
+                for (int i = 0; i < customRendered.Length; i++) {
+                    Building building = currentSubnet[i];
+                    if (customRendered[i] == false) {
+                        int buildingSize = Int32.Parse(building.buildingSize);
+                        if (buildingSize < 5){
+                        // Debug.Log(building.rendered);
+                            Debug.Log(string.Format("rendering small QD building for {0}", building.ipAddress));
+                            customRendered[i] = true;
+                            buildingIP = building.ipAddress;
+                            buildingProfile = building;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         else {
             buildingIP = "Unassigned";
-
         }
         return buildingProfile;
 
     }
-    public void CreateColor(GameObject building, Building buildingProfile){
+    public void CreateColor(GameObject building, Building buildingProfile = null){
         Dictionary<string, int> colorMap =  new Dictionary<string, int>();
         colorMap.Add("Low", 0);
         colorMap.Add("Medium", 1);
         colorMap.Add("High", 2);
+        colorMap.Add("Critical", 2);
 
-        if (buildingProfile.ipAddress != "Unassigned") {
-
+        int defaultColorIdx = 3;
+        int colorIdx = defaultColorIdx;
+        if (buildingProfile != null) {
+            if (buildingProfile.ipAddress != "Unassigned") {
+                string riskRating = buildingProfile.riskRating;
+                colorIdx = colorMap[riskRating];
+            }
         }
+        
 
         //Color Rendering
         MeshRenderer myRend;
@@ -911,8 +1041,7 @@ public class CityGenerator : MonoBehaviour {
 
         if (myRend != null) {
             Material[] materials = myRend.sharedMaterials;
-            int randIdx = UnityEngine.Random.Range(0, 4);
-            Material newMat = _Materials[randIdx];
+            Material newMat = _Materials[colorIdx];
             for ( int i = 0; i < materials.Length; i++)
             {
                 if (materials[i].name.Contains("Atlas"))
@@ -942,9 +1071,6 @@ public class CityGenerator : MonoBehaviour {
                         }
                     }
                     cRend.sharedMaterials = cMaterials;
-                    // if (randIdx < 3) {
-                    //     CreateLaser(child, randIdx);
-                    // }
                 }
 
                 else {
@@ -954,9 +1080,9 @@ public class CityGenerator : MonoBehaviour {
             }
             //Rendering Laser
             // Make sure that you put your prefab in the folder Assets/Resources
-            if (randIdx < 3) {
+            if (colorIdx < 3) {
                 if (UnityEngine.Random.Range(1, 100) <= 25) {
-                    CreateLaser(building, randIdx);
+                    CreateLaser(building, colorIdx);
                 }
             }
         }
@@ -1078,20 +1204,28 @@ public class CityGenerator : MonoBehaviour {
     }
     public void CreateBuildingsInBlocksCustom(int subnetIdx)
     {
-
+        Debug.Log("subnetIdx: " + subnetIdx);
         int numB = 0;
 
-        tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == ("Blocks") && g.transform.parent.parent.parent.name == string.Format("Subnet_{0}", subnetIdx)).ToArray();
-
+        tempArray = GameObject.FindObjectsOfType(typeof(GameObject))
+                                .Select(g => g as GameObject)
+                                .Where(g => g.name == ("Blocks")
+                                 && g.transform.parent.parent.name == string.Format("Subnet_{0}", subnetIdx))
+                                .ToArray();
+        Debug.Log("Array Length:" + tempArray.Length);
+        foreach (GameObject bks in tempArray)
+        {
+            Debug.Log(bks.transform.parent.parent.parent.name);
+        }
         foreach (GameObject bks in tempArray)
         {
 
             foreach (Transform bk in bks.transform)
             {
 
-                if (UnityEngine.Random.Range(0, 20) > 5)
+                if (UnityEngine.Random.Range(0, 20) > 0)
                 {
-
+                    Debug.Log("creating Block");
                     int lp = 0;
                     do
                     {
@@ -1106,8 +1240,10 @@ public class CityGenerator : MonoBehaviour {
 
                     _BK[numB] += 1;
 
-                    GameObject newObject = Instantiate(BK[numB], bk.position, bk.rotation, bk);
-                    CreateColor(newObject);
+                    GameObject pBuilding = Instantiate(BK[numB], bk.position, bk.rotation, bk);
+                    Building assignedBuilding = AssignIP(pBuilding);
+                    pBuilding.name = string.Format("{0} - {1}", pBuilding.name, assignedBuilding.ipAddress);   
+                    CreateColor(pBuilding, assignedBuilding);
                     nB++;
 
                 }
@@ -1198,6 +1334,49 @@ public class CityGenerator : MonoBehaviour {
                         CreateLaser(newObject, randIdx);
                     }
                     nB++;
+
+
+
+            }
+
+        }
+
+    }
+
+    public void CreateBuildingsInSuperBlocksCustom(int subnetIdx)
+    {
+
+        int numB = 0;
+
+        tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == ("SuperBlocks") && g.transform.parent.parent.parent.name == string.Format("Subnet_{0}", subnetIdx)).ToArray();
+
+        foreach (GameObject bks in tempArray)
+        {
+
+            foreach (Transform bk in bks.transform)
+            {
+
+
+                    int lp = 0;
+                    do
+                    {
+                        lp++;
+                        numB = UnityEngine.Random.Range(0, SB.Length);
+                        if (_SB[numB] == 0) break;
+                        if (lp > 125 && _SB[numB] <= 1) break;
+                        if (lp > 150 && _SB[numB] <= 2) break;
+                        if (lp > 200 && _SB[numB] <= 3) break;
+                        if (lp > 250) break;
+                    } while (lp < 300);
+
+                    _SB[numB] += 1;
+
+                    GameObject pBuilding = Instantiate(SB[numB], bk.position, bk.rotation, bk);
+
+                    //Color Rendering
+                    Building assignedBuilding = AssignIP(pBuilding);
+                    pBuilding.name = string.Format("{0} - {1}", pBuilding.name, assignedBuilding.ipAddress);   
+                    CreateColor(pBuilding, assignedBuilding);
 
 
 
@@ -1498,7 +1677,7 @@ public class CityGenerator : MonoBehaviour {
 					}
 
                     //Color Rendering
-                    CreateColor(pBuilding[index]);
+                    CreateColor(pBuilding[index], assignedBuilding);
 
 
             }
@@ -1510,7 +1689,6 @@ public class CityGenerator : MonoBehaviour {
 
 
     }
-    
     private void CreateBuildingsInDoubleLine(GameObject line)
     {
         
@@ -1606,6 +1784,92 @@ public class CityGenerator : MonoBehaviour {
                         CreateLaser(pBuilding[index], randIdx);
                     }
 
+            }
+
+
+        }
+
+    }
+    private void CreateBuildingsInDoubleLineCustom(GameObject line)
+    {
+        
+        int index = -1;
+        GameObject[] pBuilding;
+        pBuilding = new GameObject[20];
+
+        float limit;
+        limit = float.Parse(line.name);
+
+        float init = 0;
+        float pWidth = 0;
+
+        int tt = 0;
+        int t;
+        int lp;
+
+        while (tt < 100)
+        {
+
+            tt++;
+            t = 0;
+
+            lp = 0;
+
+            while (t < 200 && init <= limit - 4)
+            {
+
+                t++;
+ 
+                do
+                {
+                    lp++;
+                    numB = UnityEngine.Random.Range(0, MB.Length);
+                    if (_MB[numB] == 0) break;
+                    if (lp > 100 && _MB[numB] <= 1) break;
+                    if (lp > 150 && _MB[numB] <= 2) break;
+                    if (lp > 200) break;
+                } while (lp < 300);
+
+                pWidth = GetWith(MB[numB]);
+                if ((init + pWidth) <= (limit + 4))
+                {
+                    _MB[numB] += 1;
+                    break;
+                }
+
+            }
+
+            if (t >= 200 || init > limit - 4)
+            {
+                AdjustsWidth(pBuilding, index + 1, (limit - init), 0);
+                break;
+
+            }
+            else
+            {
+
+                index++;
+   
+                pBuilding[index] = (GameObject)Instantiate(MB[numB], new Vector3(0, 0, 0) , Quaternion.Euler(0, 90, 0), line.transform);
+                
+                nB++;
+
+                // pBuilding[index].name = "building";
+                Building assignedBuilding = AssignIP(pBuilding[index]);
+                pBuilding[index].name = string.Format("{0} - {1}", pBuilding[index].name, assignedBuilding.ipAddress);   
+                pBuilding[index].transform.SetParent(line.transform);
+                pBuilding[index].transform.localPosition = new Vector3(0,0 , (init + (pWidth * 0.5f)));
+                pBuilding[index].transform.localRotation = Quaternion.Euler(0, 90, 0);
+
+                init += pWidth;
+
+                if (init > limit - 6)
+                {
+                    AdjustsWidth(pBuilding, index + 1, (limit - init), 0);
+                }
+
+                //Color Rendering
+                CreateColor(pBuilding[index], assignedBuilding);
             }
 
 
@@ -1735,7 +1999,128 @@ public class CityGenerator : MonoBehaviour {
         
 
     }
+    private void CreateBuildingsInDoubleCustom(int subnetIdx)
+    {
+        float limit;
 
+        tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == ("Double") && g.transform.parent.parent.parent.name == string.Format("Subnet_{0}", subnetIdx)).ToArray();
+
+        GameObject DB;
+        GameObject mc2;
+        GameObject mc;
+
+
+        foreach (GameObject dbCross in tempArray)
+        {
+
+            foreach (Transform line in dbCross.transform)
+            {
+
+                limit = float.Parse(line.name);
+
+                if (UnityEngine.Random.Range(0, 10) < 5)
+                {
+                    //Bloks
+
+                    float wl;
+                    float wl2;
+
+                    do
+                    {
+                        numB = UnityEngine.Random.Range(0, DC.Length);
+                        wl = GetHeight(DC[numB]);
+                    } while (wl > limit / 2);
+
+                    GameObject e = (GameObject)Instantiate(DC[numB], line.transform.position, line.transform.rotation, line.transform);
+
+                    nB++;
+
+                    do
+                    {
+                        numB = UnityEngine.Random.Range(0, DC.Length);
+                        wl2 = GetHeight(DC[numB]);
+                    } while (wl2 > limit - (wl + 26));
+
+                    e = (GameObject)Instantiate(DC[numB], line.transform.position, line.rotation, line.transform);
+                    e.transform.SetParent(line.transform);
+                    e.transform.localPosition = new Vector3(0, 0, -limit);
+                    e.transform.localRotation = Quaternion.Euler(0, 180, 0);
+
+                    DB = new GameObject("" + ((limit - wl - wl2)));
+                    DB.transform.SetParent(line.transform);
+                    DB.transform.localPosition = new Vector3(0, 0, -(limit - wl2));
+                    DB.transform.localRotation = Quaternion.Euler(0, 0, 0);
+
+                    DB.name = "" + ((limit - wl - wl2));
+
+                    CreateBuildingsInDoubleLineCustom(DB);
+
+                }
+                else
+                {
+                    //Lines and Corners
+
+                    mc = new GameObject("Marcador");
+                    mc.transform.SetParent(line);
+                    mc.transform.localPosition = new Vector3(0, 0, 0);
+                    mc.transform.localRotation = Quaternion.Euler(0, 0, 0);
+
+
+                    for (int i = 1; i <= 4; i++)
+                    {
+                        mc2 = new GameObject("E");
+                        mc2.transform.SetParent(mc.transform);
+
+                        if (i == 1)
+                        {
+                            mc2.transform.localPosition = new Vector3(36, 0, -limit);
+                            mc2.transform.localRotation = Quaternion.Euler(0, 90, 0);
+                        }
+                        if (i == 2)
+                        {
+                            mc2.transform.localPosition = new Vector3(36, 0, 0);
+                            mc2.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                        }
+                        if (i == 3)
+                        {
+                            mc2.transform.localPosition = new Vector3(-36, 0, 0);
+                            mc2.transform.localRotation = Quaternion.Euler(0, 270, 0);
+                        }
+                        if (i == 4)
+                        {
+                            mc2.transform.localPosition = new Vector3(-36, 0, -limit);
+                            mc2.transform.localRotation = Quaternion.Euler(0, 180, 0);
+                        }
+
+                        CreateBuildingsInCorners(mc2);
+
+                    }
+
+                    mc2 = new GameObject("" + (limit - 72));
+                    mc2.transform.SetParent(mc.transform);
+                    mc2.transform.localPosition = new Vector3(-36, 0.001f, -36);
+                    mc2.transform.localRotation = Quaternion.Euler(0, 180, 0);
+                    CreateBuildingsInLineCustom(mc2, 90f);
+
+                    mc2 = new GameObject("" + (limit - 72));
+                    mc2.transform.SetParent(mc.transform);
+                    mc2.transform.localPosition = new Vector3(36, 0.001f, -(limit-36));
+                    mc2.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                    CreateBuildingsInLineCustom(mc2, 90f);
+
+                }
+
+
+
+
+            }
+
+
+
+        }
+        
+
+    }
 
     private void AdjustsWidth(GameObject[] tBuildings, int quantity, float remainingMeters, float init){
 
