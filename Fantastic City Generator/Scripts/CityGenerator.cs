@@ -9,7 +9,7 @@ using System;
 using System.Net;
 using Newtonsoft.Json;
 
-[ExecuteInEditMode]
+
 public class CityGenerator : MonoBehaviour {
 
     private int nB = 0;
@@ -188,14 +188,7 @@ public class CityGenerator : MonoBehaviour {
         Debug.Log(maxBuildings);
     }
 
-    IEnumerator onCoroutine()
-     {
-        while(true)
-        {
-            Debug.Log ("OnCoroutine: "+(int)Time.time);
-            yield return new WaitForSeconds(2f);
-        }
-     }
+
     public CityInfo GetBuildings()
     {
         //Valid: "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0"
@@ -219,7 +212,7 @@ public class CityGenerator : MonoBehaviour {
             DestroyImmediate(cityMaker);
 
         cityMaker = new GameObject("City-Maker");
-        // StartCoroutine(onCoroutine());
+
         GameObject block;
 
         distCenter = 150;
@@ -287,7 +280,7 @@ public class CityGenerator : MonoBehaviour {
             count++;
             // break;
         }
-
+        // StartCoroutine(onCoroutine());
     }
     public void GenerateStreetsSmall()
     {
@@ -601,6 +594,39 @@ public class CityGenerator : MonoBehaviour {
         CreateBuildingsInSuperBlocksCustom(subnetIdx);
         CreateBuildingsInBlocksCustom(subnetIdx);
         CreateBuildingsInDoubleCustom(subnetIdx);
+    }
+
+    public void TrackChanges(string jsonResponse) {
+
+        CityInfo info = JsonConvert.DeserializeObject<CityInfo>(jsonResponse);
+        Dictionary<string, List<Building>> newSubnetGroups = GetSubnetGroups(info);
+        Debug.Log("Received!");
+        if (subnetGroups.Count == 0) {
+            Debug.Log("No Prior Info: Assigning New");
+            subnetGroups = newSubnetGroups;
+        }
+        else {
+            Debug.Log("Has Prior Info: Tracking Changes");
+            DestroyLasers();
+            foreach (KeyValuePair<string, List<Building>> kvp in newSubnetGroups)
+            {
+                Debug.Log(string.Format("Subnet = {0}", kvp.Key));
+                for (int i = 0; i < kvp.Value.Count; i++){
+                    Building buildingProfile = kvp.Value[i];
+                    // Debug.Log(string.Format("Member = {0} - {1}", buildingProfile.hostname, buildingProfile.ipAddress));
+                    tempArray = GameObject.FindObjectsOfType(typeof(GameObject))
+                                .Select(g => g as GameObject)
+                                .Where(g => (g.name.Contains(buildingProfile.ipAddress)))
+                                .ToArray();
+                    if (tempArray.Length > 0) {
+                        GameObject targetBuilding = tempArray[0];
+                        CreateColor(targetBuilding, buildingProfile);
+                    }
+                }
+            }
+            subnetGroups = newSubnetGroups;
+        }
+
     }
     public void GenerateAllBuildings()
     {
@@ -2456,6 +2482,16 @@ public class CityGenerator : MonoBehaviour {
             Debug.Log(obj.name);
             DestroyImmediate(obj);
             nB--;
+            // foreach (Transform child in obj.transform)	{
+
+            // }
+        }
+    }
+    void DestroyLasers(){
+        tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == "Laser(Clone)").ToArray();
+        foreach (GameObject obj in tempArray) {
+            Debug.Log(obj.name);
+            DestroyImmediate(obj);
             // foreach (Transform child in obj.transform)	{
 
             // }

@@ -5,9 +5,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using Unity.EditorCoroutines.Editor;
+using Newtonsoft.Json;
+using System.Net;
 
 public class FCityGenerator : EditorWindow
 {
+    EditorCoroutine coroutine;
+    private Dictionary<string, List<Building>> subnetGroups;
+    private CityInfo cityInfo;
 
     private CityGenerator cityGenerator;
 
@@ -15,6 +21,7 @@ public class FCityGenerator : EditorWindow
     private bool intenseTraffic = false;
     bool randomMode = true;
 
+    //https://dl.dropbox.com/s/xc56hb2qmqb3zq6/Assets%20-%20Modified.json?dl=0
     [MenuItem("Window/Fantastic City Generator")]
     static void Init()
     {
@@ -26,6 +33,99 @@ public class FCityGenerator : EditorWindow
     }
 
 
+        [Serializable]
+    public class Building
+    {
+        [JsonProperty(PropertyName = "IP Address")]
+        public string ipAddress;
+        [JsonProperty(PropertyName = "Subnet")]
+        public string subnet;
+        [JsonProperty(PropertyName = "Hostname")]
+        public string hostname;
+        [JsonProperty(PropertyName = "Risk Ranking")]
+        public string riskRanking;
+        [JsonProperty(PropertyName = "Risk Rating")]
+        public string riskRating;
+        [JsonProperty(PropertyName = "Vulnerabilities")]
+        public string vulnerabilities;
+        [JsonProperty(PropertyName = "Risk")]
+        public string risk;
+        [JsonProperty(PropertyName = "Owner")]
+        public string owner;
+        [JsonProperty(PropertyName = "App")]
+        public string app;
+        [JsonProperty(PropertyName = "Exploits")]
+        public string exploits;
+        [JsonProperty(PropertyName = "Malware")]
+        public string malware;
+        [JsonProperty(PropertyName = "Type")]
+        public string type;
+        [JsonProperty(PropertyName = "Operating System")]
+        public string operatingSystem;
+        [JsonProperty(PropertyName = "Last Scan")]
+        public string lastScan;
+        [JsonProperty(PropertyName = "Building Size (sample)")]
+        public string buildingSize;
+        [JsonProperty(PropertyName = "Criticality")]
+        public string criticality;
+    }
+    [Serializable]
+    public class CityInfo
+    {
+        public List<Building> data;
+    }
+    public string CallAPI()
+    {
+        string[] apiURLs = new string[] {
+        "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0",
+        "https://dl.dropbox.com/s/xc56hb2qmqb3zq6/Assets%20-%20Modified.json?dl=0",
+        "https://dl.dropbox.com/s/bu7uwvm0b8olw41/Assets%20-%20Modified-v2.json?dl=0"
+        };
+        //Valid: "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0"
+        //Sample: https://dl.dropbox.com/s/fbh6jbyzrf86g0x/Assets-sample.json?dl=0
+        int randIdx = UnityEngine.Random.Range(0, 3);
+        Debug.Log(apiURLs[randIdx]);
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiURLs[randIdx]);
+        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+        StreamReader reader = new StreamReader(response.GetResponseStream());
+        string jsonResponse = reader.ReadToEnd();
+        Debug.Log(jsonResponse);
+        return jsonResponse;
+
+    }
+
+    public Dictionary<string, List<Building>> GetSubnetGroups(CityInfo info){
+        Dictionary<string, List<Building>> cityDict = new Dictionary<string, List<Building>>();
+        foreach (var x in info.data)
+        {
+            // Debug.Log(x.subnet);
+            // The Add method throws an exception if the new key is
+            // already in the dictionary.
+            if (x.ipAddress.Length > 0) {
+                try
+                {
+                    cityDict.Add(x.subnet, new List<Building>{x});
+                }
+                catch (ArgumentException)
+                {
+                    // Debug.Log(string.Format("An element with Key {0} already exists.", x.subnet));
+                    cityDict[x.subnet].Add(x);
+                }
+            }
+
+        }
+        var myList = cityDict.ToList();
+        myList.Sort((pair1,pair2) => pair2.Value.Count.CompareTo(pair1.Value.Count));
+        Debug.Log(myList);
+        // foreach (KeyValuePair<string, List<Building>> kvp in myList){
+        //     Debug.Log(string.Format("Key = {0}", kvp.Key));
+        //     foreach(var x in kvp.Value) {
+        //         Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
+        //     }
+        // }
+        var sortedDict = myList.ToDictionary(x => x.Key, x => x.Value);
+        return sortedDict;
+    }
 
     public void LoadAssets()
     {
@@ -116,7 +216,7 @@ public class FCityGenerator : EditorWindow
             cityGenerator.GenerateStreetsBig();
         else if (size == 5) {
             cityGenerator.GenerateCustomStreets();
-
+            coroutine = this.StartCoroutine(onCoroutine());
         }
 
         DestroyImmediate(GameObject.Find("CarContainer"));
@@ -230,6 +330,7 @@ public class FCityGenerator : EditorWindow
             if (!GameObject.Find("Marcador")) return;
             cityGenerator.DestroyBuildings();
             randomMode = true;
+            this.StopCoroutine(coroutine);
         }
 
 
@@ -247,194 +348,194 @@ public class FCityGenerator : EditorWindow
 
 
 
-        GUILayout.BeginVertical("box");
+        // GUILayout.BeginVertical("box");
 
-        GUILayout.Space(5);
+        // GUILayout.Space(5);
 
-        GUILayout.Label(new GUIContent("Traffic System", "Make or Clear Traffic System"));
+        // GUILayout.Label(new GUIContent("Traffic System", "Make or Clear Traffic System"));
 
-        GUILayout.Space(5);
-
-
-        GUILayout.BeginHorizontal("box");
+        // GUILayout.Space(5);
 
 
-        GUILayout.Space(5);
+        // GUILayout.BeginHorizontal("box");
 
-        if (GUILayout.Button("Add Traffic System"))
-        {
 
-            if (EditorApplication.isPlaying)
-            {
-                Debug.Log("Not allowed in play mode");
-                return;
-            }
+        // GUILayout.Space(5);
 
-            AddVehicles(intenseTraffic);
-        }
+        // if (GUILayout.Button("Add Traffic System"))
+        // {
 
-        
+        //     if (EditorApplication.isPlaying)
+        //     {
+        //         Debug.Log("Not allowed in play mode");
+        //         return;
+        //     }
 
-        //intense traffic
-
-        if (GUILayout.Button("Remove Traffic System"))
-        {
-            DestroyImmediate(GameObject.Find("CarContainer"));
-        }
-
+        //     AddVehicles(intenseTraffic);
+        // }
 
         
 
-        GUILayout.EndHorizontal();
+        // //intense traffic
 
-        intenseTraffic = GUILayout.Toggle(intenseTraffic, "Intense Traffic", GUILayout.Width(240));
-
-
-
-        GameObject rm = GameObject.Find("Road-Mark-Rev");
-        if (rm)
-        {
-            GUILayout.Space(10);
-
-            if (GUILayout.Button("Inverse Car Direction"))
-            {
+        // if (GUILayout.Button("Remove Traffic System"))
+        // {
+        //     DestroyImmediate(GameObject.Find("CarContainer"));
+        // }
 
 
-                if (EditorApplication.isPlaying)
-                    Debug.Log("Not allowed in play mode");
-                else
-                {
-                    bool je = GameObject.Find("CarContainer");
+        
 
-                    if (je)
-                    DestroyImmediate(GameObject.Find("CarContainer"));
+        // GUILayout.EndHorizontal();
 
-                    InverseCarDirection(GameObject.Find("RoadMarkRev"));
-                    if (je)
-                        AddVehicles(intenseTraffic);
-                }
-
-            }
-            GUILayout.Space(5);
+        // intenseTraffic = GUILayout.Toggle(intenseTraffic, "Intense Traffic", GUILayout.Width(240));
 
 
-        }
 
-        GUILayout.EndVertical();
+        // GameObject rm = GameObject.Find("Road-Mark-Rev");
+        // if (rm)
+        // {
+        //     GUILayout.Space(10);
+
+        //     if (GUILayout.Button("Inverse Car Direction"))
+        //     {
+
+
+        //         if (EditorApplication.isPlaying)
+        //             Debug.Log("Not allowed in play mode");
+        //         else
+        //         {
+        //             bool je = GameObject.Find("CarContainer");
+
+        //             if (je)
+        //             DestroyImmediate(GameObject.Find("CarContainer"));
+
+        //             InverseCarDirection(GameObject.Find("RoadMarkRev"));
+        //             if (je)
+        //                 AddVehicles(intenseTraffic);
+        //         }
+
+        //     }
+        //     GUILayout.Space(5);
+
+
+        // }
+
+        // GUILayout.EndVertical();
 
 
        
          
-        GUILayout.Space(10);
+        // GUILayout.Space(10);
 
          
-            GUILayout.BeginVertical("box");
+        //     GUILayout.BeginVertical("box");
 
 
-            if (GUILayout.Button("Combine Meshes"))
-            {
+        //     if (GUILayout.Button("Combine Meshes"))
+        //     {
 
-                if (!GameObject.Find("Marcador")) return;
+        //         if (!GameObject.Find("Marcador")) return;
 
-                float vertexCount = 0;
-                float tt;
-                GameObject module;
-                GameObject[] my_Modules;
-
-
-
-                my_Modules = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == "Marcador").ToArray();
-
-                tt = my_Modules.Length;
-
-                vertexCount = 0;
-
-                for (int i = 0; i < tt; i++)
-                {
-
-                    //Debug.Log("i: " + i );
-
-                    vertexCount = 0;
-
-
-                    module = my_Modules[i];
-
-                    GameObject newBlock = new GameObject("_block");
-                    newBlock.transform.position = module.transform.position;
-                    newBlock.transform.rotation = module.transform.rotation;
-                    newBlock.transform.parent = module.transform.parent;
-
-
-                    foreach (Transform child in module.transform)
-                    {  // E1, E2, 100
-
-                        Component[] temp = child.GetComponentsInChildren(typeof(MeshFilter));
-
-                        foreach (MeshFilter currentChild in temp)
-                        {
-
-                            vertexCount += currentChild.sharedMesh.vertexCount;
-                            if (vertexCount > 50000)
-                            {
-                                vertexCount = 0;
-                                newBlock = new GameObject("_block");
-                                newBlock.transform.position = module.transform.position;
-                                newBlock.transform.rotation = module.transform.rotation;
-                                newBlock.transform.parent = module.transform.parent;
-                            }
-
-                            if (currentChild.gameObject.name.Contains("(Clone)"))
-                            {
-                                currentChild.gameObject.transform.parent = newBlock.transform;
-                            }
-
-
-                        }
-
-
-                    }
-
-                    DestroyImmediate(my_Modules[i].gameObject);
-
-                }
+        //         float vertexCount = 0;
+        //         float tt;
+        //         GameObject module;
+        //         GameObject[] my_Modules;
 
 
 
-                GameObject[] myModules = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == "_block").ToArray();
+        //         my_Modules = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == "Marcador").ToArray();
+
+        //         tt = my_Modules.Length;
+
+        //         vertexCount = 0;
+
+        //         for (int i = 0; i < tt; i++)
+        //         {
+
+        //             //Debug.Log("i: " + i );
+
+        //             vertexCount = 0;
 
 
-                tt = myModules.Length;
+        //             module = my_Modules[i];
+
+        //             GameObject newBlock = new GameObject("_block");
+        //             newBlock.transform.position = module.transform.position;
+        //             newBlock.transform.rotation = module.transform.rotation;
+        //             newBlock.transform.parent = module.transform.parent;
+
+
+        //             foreach (Transform child in module.transform)
+        //             {  // E1, E2, 100
+
+        //                 Component[] temp = child.GetComponentsInChildren(typeof(MeshFilter));
+
+        //                 foreach (MeshFilter currentChild in temp)
+        //                 {
+
+        //                     vertexCount += currentChild.sharedMesh.vertexCount;
+        //                     if (vertexCount > 50000)
+        //                     {
+        //                         vertexCount = 0;
+        //                         newBlock = new GameObject("_block");
+        //                         newBlock.transform.position = module.transform.position;
+        //                         newBlock.transform.rotation = module.transform.rotation;
+        //                         newBlock.transform.parent = module.transform.parent;
+        //                     }
+
+        //                     if (currentChild.gameObject.name.Contains("(Clone)"))
+        //                     {
+        //                         currentChild.gameObject.transform.parent = newBlock.transform;
+        //                     }
+
+
+        //                 }
+
+
+        //             }
+
+        //             DestroyImmediate(my_Modules[i].gameObject);
+
+        //         }
 
 
 
-                for (int i = 0; i < tt; i++)
-                {
-
-                    float f = i / tt;
-
-                    EditorUtility.DisplayProgressBar("Combining meshes", "Please wait", f);
-
-                    module = myModules[i];
-
-                    GameObject newObjects = new GameObject("Combined meshes");
-                    newObjects.transform.parent = module.transform.parent;
-                    newObjects.transform.localPosition = Vector3.zero;
-                    newObjects.transform.localRotation = Quaternion.identity;
+        //         GameObject[] myModules = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == "_block").ToArray();
 
 
-                    CombineMeshes(module.gameObject, newObjects, i);
+        //         tt = myModules.Length;
 
 
-                }
 
-                EditorUtility.ClearProgressBar();
+        //         for (int i = 0; i < tt; i++)
+        //         {
+
+        //             float f = i / tt;
+
+        //             EditorUtility.DisplayProgressBar("Combining meshes", "Please wait", f);
+
+        //             module = myModules[i];
+
+        //             GameObject newObjects = new GameObject("Combined meshes");
+        //             newObjects.transform.parent = module.transform.parent;
+        //             newObjects.transform.localPosition = Vector3.zero;
+        //             newObjects.transform.localRotation = Quaternion.identity;
 
 
-            }
+        //             CombineMeshes(module.gameObject, newObjects, i);
 
-            generateLightmapUVs = GUILayout.Toggle(generateLightmapUVs, "Generate Lightmap UVs", GUILayout.Width(240));
 
-            GUILayout.EndVertical();
+        //         }
+
+        //         EditorUtility.ClearProgressBar();
+
+
+        //     }
+
+        //     generateLightmapUVs = GUILayout.Toggle(generateLightmapUVs, "Generate Lightmap UVs", GUILayout.Width(240));
+
+        //     GUILayout.EndVertical();
      
 
 
@@ -706,5 +807,14 @@ public class FCityGenerator : EditorWindow
         }
         return prefabComponents;
     }
-
+    IEnumerator onCoroutine()
+     {
+        while(true)
+        {
+            Debug.Log ("Calling API...");
+            string jsonResponse = CallAPI();
+            cityGenerator.TrackChanges(jsonResponse);
+            yield return new EditorWaitForSeconds(5f);
+        }
+     }
 }
