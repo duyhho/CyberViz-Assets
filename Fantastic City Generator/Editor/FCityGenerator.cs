@@ -8,7 +8,7 @@ using System;
 using Unity.EditorCoroutines.Editor;
 using Newtonsoft.Json;
 using System.Net;
-
+[ExecuteAlways]
 public class FCityGenerator : EditorWindow
 {
     EditorCoroutine coroutine;

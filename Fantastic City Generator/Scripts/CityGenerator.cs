@@ -281,6 +281,8 @@ public class CityGenerator : MonoBehaviour {
             // break;
         }
         // StartCoroutine(onCoroutine());
+        DestroyTrees();
+
     }
     public void GenerateStreetsSmall()
     {
@@ -993,7 +995,7 @@ public class CityGenerator : MonoBehaviour {
         //Color Rendering
 
         CreateColor(pBuilding, assignedBuilding);
-
+        //CreateTeleportationPad(pBuilding, assignedBuilding);
         nB++;
 
         // Check space behind the corner building -------------------------------------------------------------------------------------------------------------------
@@ -2490,7 +2492,20 @@ public class CityGenerator : MonoBehaviour {
     void DestroyLasers(){
         tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == "Laser(Clone)").ToArray();
         foreach (GameObject obj in tempArray) {
-            Debug.Log(obj.name);
+            // Debug.Log(obj.name);
+            DestroyImmediate(obj);
+            // foreach (Transform child in obj.transform)	{
+
+            // }
+        }
+    }
+
+    void DestroyTrees() {
+        tempArray = GameObject.FindObjectsOfType(typeof(GameObject))
+        .Select(g => g as GameObject)
+        .Where(g => g.name == "Objects" || g.name == "TreesAndLights" || g.name == "Road-Mark" || g.name == "Road-Mark-Rev" ).ToArray();
+        foreach (GameObject obj in tempArray) {
+            // Debug.Log(obj.name);
             DestroyImmediate(obj);
             // foreach (Transform child in obj.transform)	{
 
