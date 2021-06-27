@@ -13,7 +13,7 @@ public class FCityGenerator : EditorWindow
 
     private bool generateLightmapUVs = false;
     private bool intenseTraffic = false;
-
+    bool randomMode = true;
 
     [MenuItem("Window/Fantastic City Generator")]
     static void Init()
@@ -100,7 +100,12 @@ public class FCityGenerator : EditorWindow
     private void GenerateCity(int size)
     {
         LoadAssets();
-
+        if (size < 5) {
+            randomMode = true;
+        }
+        else {
+            randomMode = false;
+        }
         if (size == 1)
             cityGenerator.GenerateStreetsVerySmall();
         else if (size == 2)
@@ -109,6 +114,10 @@ public class FCityGenerator : EditorWindow
             cityGenerator.GenerateStreets();
         else if (size == 4)
             cityGenerator.GenerateStreetsBig();
+        else if (size == 5) {
+            cityGenerator.GenerateCustomStreets();
+
+        }
 
         DestroyImmediate(GameObject.Find("CarContainer"));
 
@@ -120,6 +129,7 @@ public class FCityGenerator : EditorWindow
 
     void OnGUI()
     {
+        string generateButtonText = (randomMode == true) ? "Generate Buildings (Random)" : "Generate Buildings (API Call)";
 
         GUILayout.Space(10);
 
@@ -167,6 +177,9 @@ public class FCityGenerator : EditorWindow
         if (GUILayout.Button("Very Large"))
             GenerateCity(4);
 
+        if (GUILayout.Button("Custom (API Call)"))
+            GenerateCity(5);
+
 
         GUILayout.Space(5);
 
@@ -194,17 +207,29 @@ public class FCityGenerator : EditorWindow
 
         GUILayout.Space(5);
 
-        if (GUILayout.Button("Generate Buildings"))
+        if (GUILayout.Button(generateButtonText))
         {
             if (!GameObject.Find("Marcador")) return;
-            cityGenerator.GenerateAllBuildings();
+            if (randomMode)
+                cityGenerator.GenerateAllBuildings();
+            else
+                cityGenerator.GenerateCustomBuildings();
+
         }
+
+        // if (GUILayout.Button("Generate Custom Buildings (API Call)"))
+        // {
+        //     if (!GameObject.Find("Marcador")) return;
+        //         cityGenerator.GenerateCustomBuildings();
+
+        // }
 
 
         if (GUILayout.Button("Clear Buildings"))
         {
             if (!GameObject.Find("Marcador")) return;
             cityGenerator.DestroyBuildings();
+            randomMode = true;
         }
 
 

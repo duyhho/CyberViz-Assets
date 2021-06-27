@@ -9,6 +9,7 @@ using System;
 using System.Net;
 using Newtonsoft.Json;
 
+[ExecuteInEditMode]
 public class CityGenerator : MonoBehaviour {
 
     private int nB = 0;
@@ -86,16 +87,24 @@ public class CityGenerator : MonoBehaviour {
     int currentBuildingIdx = 0;
     int currentSubnetSize = 0;
     bool[] customRendered;
-    /*
-    public void Update()
-    {
 
-        if (Input.GetKeyDown(KeyCode.R))
+    void Awake()
+    {
+        Debug.Log("Awake!");
+
+    }
+    void Update()
+    {
+        Debug.Log("Update!");
+        if (Input.GetKeyDown(KeyCode.U))
         {
-            GenerateAllBuildings();
+            Debug.Log("Update!");
         }
     }
-    */
+    void OnRenderObject(){
+        Debug.Log("OnRenderObject()");
+    }
+
     [Serializable]
     public class Building
     {
@@ -178,6 +187,15 @@ public class CityGenerator : MonoBehaviour {
         maxBuildings = cityInfo.data.Count;
         Debug.Log(maxBuildings);
     }
+
+    IEnumerator onCoroutine()
+     {
+        while(true)
+        {
+            Debug.Log ("OnCoroutine: "+(int)Time.time);
+            yield return new WaitForSeconds(2f);
+        }
+     }
     public CityInfo GetBuildings()
     {
         //Valid: "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0"
@@ -194,9 +212,32 @@ public class CityGenerator : MonoBehaviour {
     public void GenerateStreetsVerySmall()
     {
         Debug.Log("Very Smallll");
+        if (!cityMaker)
+            cityMaker = GameObject.Find("City-Maker");
 
-        // Get API Call
+        if (cityMaker)
+            DestroyImmediate(cityMaker);
 
+        cityMaker = new GameObject("City-Maker");
+        // StartCoroutine(onCoroutine());
+        GameObject block;
+
+        distCenter = 150;
+        int nb = 0;
+
+        int le = largeBlocks.Length;
+        nb = UnityEngine.Random.Range(0, le);
+  
+        block = (GameObject)Instantiate(largeBlocks[nb], new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), cityMaker.transform);
+
+
+        center = new Vector3(0,0,0);
+
+        block = (GameObject)Instantiate(miniBorder, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), cityMaker.transform);
+
+        block.transform.SetParent(cityMaker.transform);
+    }
+    public void GenerateCustomStreets() {
         cityInfo = GetBuildings();
         subnetGroups = GetSubnetGroups(cityInfo);
         maxBuildings = cityInfo.data.Count;
@@ -208,26 +249,6 @@ public class CityGenerator : MonoBehaviour {
             DestroyImmediate(cityMaker);
 
         cityMaker = new GameObject("City-Maker");
-        GenerateCustomStreets();
-
-        // GameObject block;
-
-        // distCenter = 150;
-        // int nb = 0;
-
-        // int le = largeBlocks.Length;
-        // nb = UnityEngine.Random.Range(0, le);
-  
-        // block = (GameObject)Instantiate(largeBlocks[nb], new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), cityMaker.transform);
-
-
-        // center = new Vector3(0,0,0);
-
-        // block = (GameObject)Instantiate(miniBorder, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), cityMaker.transform);
-
-        // block.transform.SetParent(cityMaker.transform);
-    }
-    public void GenerateCustomStreets() {
         int count = 0;
         foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
         {
@@ -508,6 +529,39 @@ public class CityGenerator : MonoBehaviour {
 
     private GameObject pB;
     public void GenerateCustomBuildings() {
+        _BB = new int[BB.Length];
+        _BC = new int[BC.Length];
+        _BR = new int[BR.Length];
+        //_DC = new int[DC.Length];
+        _EB = new int[EB.Length];
+        _EC = new int[EC.Length];
+        _MB = new int[MB.Length];
+        _BK = new int[BK.Length];
+        _SB = new int[SB.Length];
+
+        _Materials = new Material[4];
+
+        _Materials[0] = (Material)Resources.Load("Atlas-Blue", typeof(Material));
+        _Materials[1] = (Material)Resources.Load("Atlas-Yellow", typeof(Material));
+        _Materials[2] = (Material)Resources.Load("Atlas-Red", typeof(Material));
+        _Materials[3] = (Material)Resources.Load("Atlas-Gray", typeof(Material));
+
+        _laserMaterials = new Material[4];
+        _laserMaterials[0] = (Material)Resources.Load("Materials/laserwhite", typeof(Material));
+        _laserMaterials[1] = (Material)Resources.Load("Materials/laseryellow", typeof(Material));
+        _laserMaterials[2] = (Material)Resources.Load("Materials/laserred", typeof(Material));
+        // _laserMaterials[3] = (Material)Resources.Load("Materials/laserblue", typeof(Material));
+
+        residential = 0;
+
+        DestroyBuildings();
+
+        GameObject pB = new GameObject();
+
+        nB = 0;
+
+
+
         int count = 1;
         foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
         {
@@ -533,16 +587,20 @@ public class CityGenerator : MonoBehaviour {
             }
             Debug.Log(string.Format("{0} are left", remaining));
             // DestroyUnassigned();
-            break;
+            // break;
         }
+        Debug.ClearDeveloperConsole();
+        Debug.Log(nB + " buildings were created");
+
+
+        DestroyImmediate(pB);
     }
 
     public void GenerateSubnet(int subnetIdx){
-        
-        // CreateBuildingsInSuperBlocksCustom(subnetIdx);
+        CreateBuildingsInLinesCustom(subnetIdx);
+        CreateBuildingsInSuperBlocksCustom(subnetIdx);
         CreateBuildingsInBlocksCustom(subnetIdx);
-        // CreateBuildingsInLinesCustom(subnetIdx);
-        // CreateBuildingsInDoubleCustom(subnetIdx);
+        CreateBuildingsInDoubleCustom(subnetIdx);
     }
     public void GenerateAllBuildings()
     {
@@ -580,11 +638,10 @@ public class CityGenerator : MonoBehaviour {
 
         nB = 0;
 
-        // CreateBuildingsInSuperBlocks();
-        // CreateBuildingsInBlocks();
-        // CreateBuildingsInLines();
-        // CreateBuildingsInDouble();
-        GenerateCustomBuildings();
+        CreateBuildingsInSuperBlocks();
+        CreateBuildingsInBlocks();
+        CreateBuildingsInLines();
+        CreateBuildingsInDouble();
 
         Debug.ClearDeveloperConsole();
         Debug.Log(nB + " buildings were created");
@@ -620,7 +677,7 @@ public class CityGenerator : MonoBehaviour {
                 // _residential = true;
                 // Debug.Log(Vector3.Distance(center, child.transform.position));
                 if (child.name == "E") {
-                    CreateBuildingsInCorners(child.gameObject);
+                    CreateBuildingsInCornersCustom(child.gameObject);
 
                 }
                 else
@@ -749,15 +806,15 @@ public class CityGenerator : MonoBehaviour {
         // pBuilding.name = string.Format("IP_{0}", nB);
         // Debug.Log(buildingIP);
         // pBuilding.name = (buildingIP != "") ? string.Format("{0} - {1}", pBuilding.name, buildingIP) : string.Format("{0} - Unassigned", pBuilding.name);
-        Building assignedBuilding = AssignIP(pBuilding);
-        pBuilding.name = string.Format("{0} - {1}", pBuilding.name, assignedBuilding.ipAddress);
-        Debug.Log(pBuilding.name);
+
+        pBuilding.name = pBuilding.name;
+
         pBuilding.transform.SetParent(child.transform);
         pBuilding.transform.localPosition = new Vector3(-(pWidth * 0.5f), 0, 0);
         pBuilding.transform.localRotation = Quaternion.Euler(0, 0, 0);
         //Color Rendering
 
-        CreateColor(pBuilding, assignedBuilding);
+        CreateColor(pBuilding);
 
         nB++;
 
@@ -772,7 +829,7 @@ public class CityGenerator : MonoBehaviour {
             newMarcador.transform.localPosition = new Vector3(0, 0, -36);
             newMarcador.transform.localRotation = Quaternion.Euler(0, 0, 0);
             newMarcador.name = (36 - wComprimento).ToString();
-            CreateBuildingsInLineCustom(newMarcador, 90);
+            CreateBuildingsInLine(newMarcador, 90);
 
         }
         else
@@ -798,6 +855,158 @@ public class CityGenerator : MonoBehaviour {
             newMarcador.transform.localPosition = new Vector3(-pWidth, 0, 0);
             newMarcador.transform.localRotation = Quaternion.Euler(0, 270, 0);
             newMarcador.name = (36 - pWidth).ToString();
+            CreateBuildingsInLine(newMarcador, 90);
+
+        }
+        else
+        {
+
+            remainingMeters = 36 - pWidth;
+            pScale = 1 + (remainingMeters / pWidth);
+            pBuilding.transform.localScale = new Vector3(pScale, 1, 1);
+
+        }
+    }
+    public void CreateBuildingsInCornersCustom(GameObject child)
+    {
+
+        GameObject pBuilding;
+
+        pB = null;
+
+        string buildingIP = "";
+
+        int numB;
+        int t = 0;
+        float pWidth = 0;
+        float wComprimento;
+
+        float pScale;
+        float remainingMeters;
+        GameObject newMarcador;
+
+        float distancia = Vector3.Distance(center, child.transform.position);
+
+        int lp;
+        lp = 0;
+        // foreach(GameObject building in EC){
+        //     Debug.Log(string.Format("EC BUILDING: {0}", building.name));
+        // }
+        // foreach(GameObject building in EB){
+        //     Debug.Log(string.Format("EB BUILDING: {0}", building.name));
+        // }
+        while (t < 100)
+        {
+
+            t++;
+
+            if (distancia < distCenter)
+            {
+
+                do
+                {
+                    lp++;
+                    numB = UnityEngine.Random.Range(0, EC.Length);
+                    if (_EC[numB] == 0) break;
+                    if (lp > 100 && _EC[numB] <= 1) break;
+                    if (lp > 150 && _EC[numB] <= 2) break;
+                    if (lp > 200 && _EC[numB] <= 3) break;
+                    if (lp > 250) break;
+                } while (lp < 300);
+
+
+
+                pWidth = GetWith(EC[numB]);
+                if (pWidth <= 36.05f)
+                {
+                    _EC[numB] += 1;
+                    pB = EC[numB];
+                    break;
+                }
+            }
+            else
+            {
+
+
+
+                do
+                {
+                    lp++;
+                    numB = UnityEngine.Random.Range(0, EB.Length);
+                    if (_EB[numB] == 0) break;
+                    if (lp > 100 && _EB[numB] <= 1) break;
+                    if (lp > 150 && _EB[numB] <= 2) break;
+                    if (lp > 200 && _EB[numB] <= 2) break;
+                    if (lp > 250) break;
+                } while (lp < 300);
+
+
+                pWidth = GetWith(EB[numB]);
+                if (pWidth <= 36.05f)
+                {
+                    _EB[numB] += 1;
+                    pB = EB[numB];
+                    //q = _EB[numB];
+                    break;
+                }
+
+            }
+
+        }
+        pBuilding = (GameObject)Instantiate(pB, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0));
+
+        // pBuilding.name = string.Format("IP_{0}", nB);
+        // Debug.Log(buildingIP);
+        // pBuilding.name = (buildingIP != "") ? string.Format("{0} - {1}", pBuilding.name, buildingIP) : string.Format("{0} - Unassigned", pBuilding.name);
+        Building assignedBuilding = AssignIP(pBuilding);
+        pBuilding.name = string.Format("{0} - {1}", pBuilding.name, assignedBuilding.ipAddress);
+        Debug.Log(pBuilding.name);
+        pBuilding.transform.SetParent(child.transform);
+        pBuilding.transform.localPosition = new Vector3(-(pWidth * 0.5f), 0, 0);
+        pBuilding.transform.localRotation = Quaternion.Euler(0, 0, 0);
+        //Color Rendering
+
+        CreateColor(pBuilding, assignedBuilding);
+
+        nB++;
+
+        // Check space behind the corner building -------------------------------------------------------------------------------------------------------------------
+        wComprimento = GetHeight(pB);
+        if (wComprimento < 29.9f)
+        {
+
+            newMarcador = new GameObject("Marcador");
+
+            newMarcador.transform.SetParent(child.transform);
+            newMarcador.transform.localPosition = new Vector3(0, 0, -36);
+            newMarcador.transform.localRotation = Quaternion.Euler(0, 0, 0);
+            newMarcador.name = (36 - wComprimento).ToString();
+            CreateBuildingsInLineCustom(newMarcador, 90);
+
+        }
+        else
+        {
+            remainingMeters = 36 - wComprimento;
+            pScale = 1 + (remainingMeters / wComprimento);
+            pBuilding.transform.localScale = new Vector3(1, 1, pScale);
+
+        }
+
+
+        // Check space on the corner building -------------------------------------------------------------------------------------------------------------------
+
+
+        if (pWidth < 29.9f)
+        {
+
+            newMarcador = new GameObject("Marcador");
+
+
+
+            newMarcador.transform.SetParent(child.transform);
+            newMarcador.transform.localPosition = new Vector3(-pWidth, 0, 0);
+            newMarcador.transform.localRotation = Quaternion.Euler(0, 270, 0);
+            newMarcador.name = (36 - pWidth).ToString();
             CreateBuildingsInLineCustom(newMarcador, 90);
 
         }
@@ -810,7 +1019,6 @@ public class CityGenerator : MonoBehaviour {
 
         }
     }
-
     int RandRotation()
     {
         int r = 0;
@@ -1210,12 +1418,13 @@ public class CityGenerator : MonoBehaviour {
         tempArray = GameObject.FindObjectsOfType(typeof(GameObject))
                                 .Select(g => g as GameObject)
                                 .Where(g => g.name == ("Blocks")
-                                 && g.transform.parent.parent.name == string.Format("Subnet_{0}", subnetIdx))
+                                // )
+                                 && g.transform.parent.parent.parent.name == string.Format("Subnet_{0}", subnetIdx))
                                 .ToArray();
         Debug.Log("Array Length:" + tempArray.Length);
         foreach (GameObject bks in tempArray)
         {
-            Debug.Log(bks.transform.parent.parent.parent.name);
+            Debug.Log(bks.transform.parent.parent.name);
         }
         foreach (GameObject bks in tempArray)
         {
@@ -1274,7 +1483,7 @@ public class CityGenerator : MonoBehaviour {
                             nc.transform.localPosition = new Vector3(36, 0, -36);
                             nc.transform.localRotation = Quaternion.Euler(0, 90, 0);
                         }
-                        CreateBuildingsInCorners(nc);
+                        CreateBuildingsInCornersCustom(nc);
 
                     }
                 }
@@ -1316,23 +1525,7 @@ public class CityGenerator : MonoBehaviour {
                     GameObject newObject = Instantiate(SB[numB], bk.position, bk.rotation, bk);
 
                     //Color Rendering
-                    MeshRenderer myRend;
-                    myRend = newObject.GetComponent<MeshRenderer>();
-                    Material[] materials = myRend.sharedMaterials;
-                    int randIdx = UnityEngine.Random.Range(0, 4);
-                    Material newMat = _Materials[randIdx];
-                    for (int i = 0; i < materials.Length; i++)
-                    {
-                        if (materials[i].name.Contains("Atlas"))
-                        {
-                            materials[i] = newMat;
-                            Debug.Log(materials[i].name);
-                        }
-                    }
-                    myRend.sharedMaterials = materials;
-                    if (randIdx < 3){
-                        CreateLaser(newObject, randIdx);
-                    }
+                    CreateColor(newObject);
                     nB++;
 
 
@@ -1765,24 +1958,7 @@ public class CityGenerator : MonoBehaviour {
                 }
 
                 //Color Rendering
-                MeshRenderer myRend;
-                myRend = pBuilding[index].GetComponent<MeshRenderer>();
-                Material[] materials = myRend.sharedMaterials;
-                int randIdx = UnityEngine.Random.Range(0, 4);
-                Material newMat = _Materials[randIdx];
-                for (int i = 0; i < materials.Length; i++)
-                {
-                    if (materials[i].name.Contains("Atlas"))
-                    {
-                        materials[i] = newMat;
-                        Debug.Log(materials[i].name);
-                    }
-                }
-                myRend.sharedMaterials = materials;
-
-                if (randIdx < 3){
-                        CreateLaser(pBuilding[index], randIdx);
-                    }
+                CreateColor(pBuilding[index]);
 
             }
 
@@ -2045,6 +2221,9 @@ public class CityGenerator : MonoBehaviour {
                     e.transform.SetParent(line.transform);
                     e.transform.localPosition = new Vector3(0, 0, -limit);
                     e.transform.localRotation = Quaternion.Euler(0, 180, 0);
+                    Building assignedBuilding = AssignIP(e);
+                    e.name = string.Format("{0} - {1}", e.name, assignedBuilding.ipAddress);
+                    CreateColor(e, assignedBuilding);
 
                     DB = new GameObject("" + ((limit - wl - wl2)));
                     DB.transform.SetParent(line.transform);
@@ -2092,7 +2271,7 @@ public class CityGenerator : MonoBehaviour {
                             mc2.transform.localRotation = Quaternion.Euler(0, 180, 0);
                         }
 
-                        CreateBuildingsInCorners(mc2);
+                        CreateBuildingsInCornersCustom(mc2);
 
                     }
 
