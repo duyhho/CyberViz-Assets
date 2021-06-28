@@ -1,10 +1,10 @@
-# First, ignore everything
-*
-# Now, whitelist anything that's a directory
-!*/
-# And all the file types you're interested in.
-!*.cs
-!.gitignore
-!*.unity
-!Fantastic City Generator/Roads/Prefab/*.prefab
-!*.mat
+# # First, ignore everything
+# *
+# # Now, whitelist anything that's a directory
+# !*/
+# # And all the file types you're interested in.
+# !*.cs
+# !.gitignore
+# !*.unity
+# !Fantastic City Generator/Roads/Prefab/*.prefab
+# !*.mat
