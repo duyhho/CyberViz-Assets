@@ -8,3 +8,5 @@
 !*.unity
 !Fantastic City Generator/Roads/Prefab/*.prefab
 !*.mat
+!*.prefab
+!*.fbx
