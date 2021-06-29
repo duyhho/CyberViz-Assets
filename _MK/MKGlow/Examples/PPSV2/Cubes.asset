@@ -83,7 +83,7 @@ MonoBehaviour:
     value: 7
   bloomIntensity:
     overrideState: 1
-    value: 1.1
+    value: 1
   allowLensSurface:
     overrideState: 1
     value: 1

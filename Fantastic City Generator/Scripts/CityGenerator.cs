@@ -220,7 +220,10 @@ public class CityGenerator : MonoBehaviour {
 
         int le = largeBlocks.Length;
         nb = UnityEngine.Random.Range(0, le);
-  
+        while (largeBlocks[nb].name.Contains("05") || largeBlocks[nb].name.Contains("01") || largeBlocks[nb].name.Contains("02") || largeBlocks[nb].name.Contains("10")) {
+            nb = UnityEngine.Random.Range(0, le);
+        }
+        // Debug.Log(largeBlocks[nb].name);
         block = (GameObject)Instantiate(largeBlocks[nb], new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), cityMaker.transform);
 
 
@@ -266,7 +269,9 @@ public class CityGenerator : MonoBehaviour {
 
             int le = largeBlocks.Length;
             nb = UnityEngine.Random.Range(0, le);
-
+            while (largeBlocks[nb].name.Contains("05") || largeBlocks[nb].name.Contains("01") || largeBlocks[nb].name.Contains("02") || largeBlocks[nb].name.Contains("10")) {
+                nb = UnityEngine.Random.Range(0, le);
+            }
             block = (GameObject)Instantiate(largeBlocks[nb], new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), subnet.transform);
             block.transform.SetParent(subnet.transform);
             block.transform.localPosition = Vector3.zero;
@@ -595,7 +600,7 @@ public class CityGenerator : MonoBehaviour {
         CreateBuildingsInLinesCustom(subnetIdx);
         CreateBuildingsInSuperBlocksCustom(subnetIdx);
         CreateBuildingsInBlocksCustom(subnetIdx);
-        CreateBuildingsInDoubleCustom(subnetIdx);
+        // CreateBuildingsInDoubleCustom(subnetIdx);
     }
 
     public void TrackChanges(string jsonResponse) {
@@ -669,7 +674,7 @@ public class CityGenerator : MonoBehaviour {
         CreateBuildingsInSuperBlocks();
         CreateBuildingsInBlocks();
         CreateBuildingsInLines();
-        CreateBuildingsInDouble();
+        // CreateBuildingsInDouble();
 
         Debug.ClearDeveloperConsole();
         Debug.Log(nB + " buildings were created");
@@ -730,8 +735,10 @@ public class CityGenerator : MonoBehaviour {
                     CreateBuildingsInCorners(child.gameObject);
                     // CreateBuildingsInLine(child.gameObject, 90f);
 
-                else
+                else {
                     CreateBuildingsInLine(child.gameObject, 90f);
+//
+                }
                     // CreateBuildingsInCorners(child.gameObject);
 
             }
@@ -791,7 +798,7 @@ public class CityGenerator : MonoBehaviour {
                 } while (lp < 300);
 
 
-
+                // Debug.Log(EC[numB]);
                 pWidth = GetWith(EC[numB]);
                 if (pWidth <= 36.05f)
                 {
@@ -838,7 +845,7 @@ public class CityGenerator : MonoBehaviour {
         pBuilding.name = pBuilding.name;
 
         pBuilding.transform.SetParent(child.transform);
-        pBuilding.transform.localPosition = new Vector3(-(pWidth * 0.5f), 0, 0);
+        pBuilding.transform.localPosition = new Vector3(-(pWidth * 0.5f), 0, -(pWidth * 0.5f));
         pBuilding.transform.localRotation = Quaternion.Euler(0, 0, 0);
         //Color Rendering
 
@@ -990,7 +997,7 @@ public class CityGenerator : MonoBehaviour {
         pBuilding.name = string.Format("{0} - {1}", pBuilding.name, assignedBuilding.ipAddress);
         Debug.Log(pBuilding.name);
         pBuilding.transform.SetParent(child.transform);
-        pBuilding.transform.localPosition = new Vector3(-(pWidth * 0.5f), 0, 0);
+        pBuilding.transform.localPosition = new Vector3(-(pWidth * 0.5f), 0, -(pWidth * 0.5f));
         pBuilding.transform.localRotation = Quaternion.Euler(0, 0, 0);
         //Color Rendering
 
@@ -1064,11 +1071,12 @@ public class CityGenerator : MonoBehaviour {
         string buildingIP = "Unassigned";
         Building buildingProfile = new Building();
         buildingProfile.ipAddress = "Unassigned";
-        if (pBuilding.name.Contains("EB")){
+        if (pBuilding.name.Contains("Triangle")){
             for (int i = 0; i < customRendered.Length; i++) {
                 Building building = currentSubnet[i];
                 if (customRendered[i] == false) {
-                    if (Int32.Parse(building.buildingSize) < 5){
+                    string buildingType = building.type;
+                    if (buildingType == "Endpoint"){
                     // Debug.Log(building.rendered);
                         // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
                         customRendered[i] = true;
@@ -1079,63 +1087,12 @@ public class CityGenerator : MonoBehaviour {
                 }
             }
         }
-        else if (pBuilding.name.Contains("QD")){
-            // Debug.Log("in " + pBuilding.name);
-            if (pBuilding.name.Contains("14")){
-                for (int i = 0; i < customRendered.Length; i++) {
-                    Building building = currentSubnet[i];
-                    if (customRendered[i] == false) {
-                        int buildingSize = Int32.Parse(building.buildingSize);
-                        if (buildingSize >= 10 && buildingSize <= 20 ){
-                        // Debug.Log(building.rendered);
-                            // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
-                            customRendered[i] = true;
-                            buildingIP = building.ipAddress;
-                            buildingProfile = building;
-                            break;
-                        }
-                    }
-                }
-            }
-            else if (pBuilding.name.Contains("10") || pBuilding.name.Contains("12") || pBuilding.name.Contains("13")){
-                for (int i = 0; i < customRendered.Length; i++) {
-                    Building building = currentSubnet[i];
-                    if (customRendered[i] == false) {
-                        int buildingSize = Int32.Parse(building.buildingSize);
-                        if (buildingSize >= 5 && buildingSize <= 10 ){
-                        // Debug.Log(building.rendered);
-                            // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
-                            customRendered[i] = true;
-                            buildingIP = building.ipAddress;
-                            buildingProfile = building;
-                            break;
-                        }
-                    }
-                }
-            }
-            else {
-                for (int i = 0; i < customRendered.Length; i++) {
-                    Building building = currentSubnet[i];
-                    if (customRendered[i] == false) {
-                        int buildingSize = Int32.Parse(building.buildingSize);
-                        if (buildingSize < 5){
-                        // Debug.Log(building.rendered);
-                            // Debug.Log(string.Format("rendering small QD building for {0}", building.ipAddress));
-                            customRendered[i] = true;
-                            buildingIP = building.ipAddress;
-                            buildingProfile = building;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        else if (pBuilding.name.Contains("BB")){
+        else if (pBuilding.name.Contains("Rectangle-Small")){
             for (int i = 0; i < customRendered.Length; i++) {
                 Building building = currentSubnet[i];
                 if (customRendered[i] == false) {
-                    int buildingSize = Int32.Parse(building.buildingSize);
-                    if (buildingSize >= 5 && buildingSize <= 25 ){
+                    string buildingType = building.type;
+                    if (buildingType == "Windows Server"){
                     // Debug.Log(building.rendered);
                         // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
                         customRendered[i] = true;
@@ -1146,12 +1103,12 @@ public class CityGenerator : MonoBehaviour {
                 }
             }
         }
-        else if (pBuilding.name.Contains("BR")){
+        else if (pBuilding.name.Contains("Circle")){
             for (int i = 0; i < customRendered.Length; i++) {
                 Building building = currentSubnet[i];
                 if (customRendered[i] == false) {
-                    int buildingSize = Int32.Parse(building.buildingSize);
-                    if (buildingSize >= 5 && buildingSize < 25 ){
+                    string buildingType = building.type;
+                    if (buildingType == "Database"){
                     // Debug.Log(building.rendered);
                         // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
                         customRendered[i] = true;
@@ -1162,12 +1119,12 @@ public class CityGenerator : MonoBehaviour {
                 }
             }
         }
-        else if (pBuilding.name.Contains("EC") || pBuilding.name.Contains("BC")){
+        else if (pBuilding.name.Contains("Pentagon")){
             for (int i = 0; i < customRendered.Length; i++) {
                 Building building = currentSubnet[i];
                 if (customRendered[i] == false) {
-                    int buildingSize = Int32.Parse(building.buildingSize);
-                    if (buildingSize >= 25 ){
+                    string buildingType = building.type;
+                    if (buildingType == "Linux Server"){
                     // Debug.Log(building.rendered);
                         // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
                         customRendered[i] = true;
@@ -1178,72 +1135,34 @@ public class CityGenerator : MonoBehaviour {
                 }
             }
         }
-        else if (pBuilding.name.Contains("SB")){
-            Debug.Log("in " + pBuilding.name);
-
+        else if (pBuilding.name.Contains("Cross")){
             for (int i = 0; i < customRendered.Length; i++) {
                 Building building = currentSubnet[i];
-                int buildingSize = Int32.Parse(building.buildingSize);
-
-                if (buildingSize >= 40){
-                    if (customRendered[i] == false) {
-                        // Debug.Log(building.rendered);
-                            Debug.Log(string.Format("rendering superbig building for {0}", building.ipAddress));
-                            customRendered[i] = true;
-                            buildingIP = building.ipAddress;
-                            buildingProfile = building;
-                            break;
+                if (customRendered[i] == false) {
+                    string buildingType = building.type;
+                    if (buildingType == "Appliance"){
+                    // Debug.Log(building.rendered);
+                        // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
+                        customRendered[i] = true;
+                        buildingIP = building.ipAddress;
+                        buildingProfile = building;
+                        break;
                     }
                 }
             }
         }
-        else if (pBuilding.name.Contains("M-")){
-            Debug.Log("in " + pBuilding.name);
-            if (pBuilding.name.Contains("M-BC-005")){
-                for (int i = 0; i < customRendered.Length; i++) {
-                    Building building = currentSubnet[i];
-                    if (customRendered[i] == false) {
-                        int buildingSize = Int32.Parse(building.buildingSize);
-                        if (buildingSize > 25){
-                        // Debug.Log(building.rendered);
-                            // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
-                            customRendered[i] = true;
-                            buildingIP = building.ipAddress;
-                            buildingProfile = building;
-                            break;
-                        }
-                    }
-                }
-            }
-            else if (pBuilding.name.Contains("017") || pBuilding.name.Contains("021") || pBuilding.name.Contains("005") || pBuilding.name.Contains("009") || pBuilding.name.Contains("015") || pBuilding.name.Contains("016") || pBuilding.name.Contains("022")){
-                for (int i = 0; i < customRendered.Length; i++) {
-                    Building building = currentSubnet[i];
-                    if (customRendered[i] == false) {
-                        int buildingSize = Int32.Parse(building.buildingSize);
-                        if (buildingSize >= 10 && buildingSize <= 20 ){
-                        // Debug.Log(building.rendered);
-                            // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
-                            customRendered[i] = true;
-                            buildingIP = building.ipAddress;
-                            buildingProfile = building;
-                            break;
-                        }
-                    }
-                }
-            }
-            else {
-                for (int i = 0; i < customRendered.Length; i++) {
-                    Building building = currentSubnet[i];
-                    if (customRendered[i] == false) {
-                        int buildingSize = Int32.Parse(building.buildingSize);
-                        if (buildingSize < 5){
-                        // Debug.Log(building.rendered);
-                            Debug.Log(string.Format("rendering small QD building for {0}", building.ipAddress));
-                            customRendered[i] = true;
-                            buildingIP = building.ipAddress;
-                            buildingProfile = building;
-                            break;
-                        }
+        else if (pBuilding.name.Contains("Rectangle-Fat") || pBuilding.name.Contains("Rectangle-Super")){
+            for (int i = 0; i < customRendered.Length; i++) {
+                Building building = currentSubnet[i];
+                if (customRendered[i] == false) {
+                    string buildingType = building.type;
+                    if (buildingType == "Network"){
+                    // Debug.Log(building.rendered);
+                        // Debug.Log(string.Format("rendering small building for {0}", building.ipAddress));
+                        customRendered[i] = true;
+                        buildingIP = building.ipAddress;
+                        buildingProfile = building;
+                        break;
                     }
                 }
             }
@@ -1353,8 +1272,11 @@ public class CityGenerator : MonoBehaviour {
         if ((building.name.Contains("QD")) || (building.name.Contains("building"))){
             laser.transform.localPosition = new Vector3(0f, buildingY, -0.5f);
         }
-        else {
+        else if (building.name.Contains("EC")) {
             laser.transform.localPosition = new Vector3(0f, buildingY, -(buildingHeight*0.5f));
+        }
+        else {
+            laser.transform.localPosition = new Vector3(0f, buildingY, 0f);
         }
 
 
@@ -1395,7 +1317,7 @@ public class CityGenerator : MonoBehaviour {
 
                     _BK[numB] += 1;
 
-                    GameObject newObject = Instantiate(BK[numB], bk.position, bk.rotation, bk);             
+                    GameObject newObject = Instantiate(BK[numB], bk.position, bk.rotation, bk);
                     CreateColor(newObject);
                     nB++;
 
@@ -1728,15 +1650,14 @@ public class CityGenerator : MonoBehaviour {
                
 					index++;
 
-                    pBuilding[index] = (GameObject)Instantiate(pB, new Vector3(0, 0, init + (pWidth * 0.5f)), Quaternion.Euler(0, angulo, 0));
+                    pBuilding[index] = (GameObject)Instantiate(pB, new Vector3(-(pWidth * 0.5f), 0, init + (pWidth * 0.5f)), Quaternion.Euler(0, angulo, 0));
                     nB++;
 
                     pBuilding[index].name = pBuilding[index].name;
 					pBuilding [index].transform.SetParent (line.transform);
 
-					pBuilding [index].transform.localPosition = new Vector3 (0, 0, init + (pWidth * 0.5f));
+					pBuilding [index].transform.localPosition = new Vector3 (-(pWidth * 0.5f), 0, init + (pWidth * 0.5f));
 					pBuilding [index].transform.localRotation = Quaternion.Euler (0, angulo, 0);
-
 					init += pWidth;
 
 					if (init > limit - 6) { //72) {
@@ -1745,6 +1666,10 @@ public class CityGenerator : MonoBehaviour {
 
 					}
 
+                    //Random Height
+                    pBuilding [index].transform.localScale = new Vector3(pBuilding[index].transform.localScale.x,UnityEngine.Random.Range(1,10),1);
+                    // Debug.Log(pBuilding [index].transform.localScale.y);
+                    Debug.Log("Random Height");
                     //Color Rendering
                     CreateColor(pBuilding[index]);
             }
@@ -1877,7 +1802,7 @@ public class CityGenerator : MonoBehaviour {
 
 					index++;
 
-                    pBuilding[index] = (GameObject)Instantiate(pB, new Vector3(0, 0, init + (pWidth * 0.5f)), Quaternion.Euler(0, angulo, 0));
+                    pBuilding[index] = (GameObject)Instantiate(pB, new Vector3(-(pWidth * 0.5f), 0, init + (pWidth * 0.5f)), Quaternion.Euler(0, angulo, 0));
                     nB++;
 
 
@@ -1886,7 +1811,7 @@ public class CityGenerator : MonoBehaviour {
                     pBuilding[index].name = string.Format("{0} - {1}", pBuilding[index].name, assignedBuilding.ipAddress);
 					pBuilding[index].transform.SetParent (line.transform);
 
-					pBuilding [index].transform.localPosition = new Vector3 (0, 0, init + (pWidth * 0.5f));
+					pBuilding [index].transform.localPosition = new Vector3 (-(pWidth * 0.5f), 0, init + (pWidth * 0.5f));
 					pBuilding [index].transform.localRotation = Quaternion.Euler (0, angulo, 0);
 
 					init += pWidth;
@@ -2351,20 +2276,26 @@ public class CityGenerator : MonoBehaviour {
                 pWidth = gw + ajuste;
 
                 tBuildings[i].transform.localPosition = new Vector3(tBuildings[i].transform.localPosition.x, tBuildings[i].transform.localPosition.y, zInit + (pWidth * 0.5f));
-                tBuildings[i].transform.localScale = new Vector3(pScale, 1, 1);
+                // tBuildings[i].transform.localScale = new Vector3(pScale, 1, 1);
+                // pBuilding [index].transform. localScale = new Vector3(1,UnityEngine.Random.Range(1,20),1);
+
                 zInit += pWidth;
             }    
 
 		}
-
+        Debug.Log("Finish");
 	}
 
 
 	private float GetWith(GameObject building){
 
+        // Debug.Log(building);
+        if (building.transform.GetComponent<MeshFilter>() != null) {
+            // Debug.Log(building.transform.GetComponent<MeshFilter>().sharedMesh);
 
-        if (building.transform.GetComponent<MeshFilter>() != null)
             return building.transform.GetComponent<MeshFilter>().sharedMesh.bounds.size.x;
+        }
+
         else
         {
             Debug.LogError("Error:  " + building.name + " does not have a mesh renderer at the root. The prefab must be the floor/base mesh. I nside it you place the building. More info im https://youtu.be/kVrWir_WjNY");

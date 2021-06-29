@@ -2,7 +2,10 @@ fileFormatVersion: 2
 guid: 7c915b13fdbfa9c4fad43e7d413e2f38
 ModelImporter:
   serializedVersion: 19301
-  internalIDToNameTable: []
+  internalIDToNameTable:
+  - first:
+      74: 8778272744875766456
+    second: Rectangle-Fat.001|Rectangle-Fat.001Action
   externalObjects: {}
   materials:
     materialImportMode: 1
