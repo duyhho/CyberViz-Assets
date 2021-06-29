@@ -2182,13 +2182,13 @@ public class CityGenerator : MonoBehaviour {
                     mc2.transform.SetParent(mc.transform);
                     mc2.transform.localPosition = new Vector3(-36, 0.001f, -36);
                     mc2.transform.localRotation = Quaternion.Euler(0, 180, 0);
-                    CreateBuildingsInLineCustom(mc2, 90f);
+                    CreateBuildingsInLine(mc2, 90f);
 
                     mc2 = new GameObject("" + (limit - 72));
                     mc2.transform.SetParent(mc.transform);
                     mc2.transform.localPosition = new Vector3(36, 0.001f, -(limit-36));
                     mc2.transform.localRotation = Quaternion.Euler(0, 0, 0);
-                    CreateBuildingsInLineCustom(mc2, 90f);
+                    CreateBuildingsInLine(mc2, 90f);
 
                 }
 
