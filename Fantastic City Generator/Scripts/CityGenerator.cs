@@ -69,6 +69,8 @@ public class CityGenerator : MonoBehaviour {
 
     private Material[] _Materials;
     private Material[] _laserMaterials;
+    private Material[] _internalLaserMaterials;
+
 
     private GameObject[] tempArray;
     private int numB;
@@ -552,6 +554,11 @@ public class CityGenerator : MonoBehaviour {
         _laserMaterials[2] = (Material)Resources.Load("Materials/laserred", typeof(Material));
         // _laserMaterials[3] = (Material)Resources.Load("Materials/laserblue", typeof(Material));
 
+        _internalLaserMaterials = new Material[4];
+        _internalLaserMaterials[0] = (Material)Resources.Load("Materials/laserblue_dashed", typeof(Material));
+        _internalLaserMaterials[1] = (Material)Resources.Load("Materials/laseryellow_dashed", typeof(Material));
+        _internalLaserMaterials[2] = (Material)Resources.Load("Materials/laserred_dashed", typeof(Material));
+
         residential = 0;
 
         DestroyBuildings();
@@ -799,7 +806,7 @@ public class CityGenerator : MonoBehaviour {
 
 
                 // Debug.Log(EC[numB]);
-                pWidth = GetWith(EC[numB]);
+                pWidth = GetWidth(EC[numB]);
                 if (pWidth <= 36.05f)
                 {
                     _EC[numB] += 1;
@@ -824,7 +831,7 @@ public class CityGenerator : MonoBehaviour {
                 } while (lp < 300);
 
 
-                pWidth = GetWith(EB[numB]);
+                pWidth = GetWidth(EB[numB]);
                 if (pWidth <= 36.05f)
                 {
                     _EB[numB] += 1;
@@ -951,7 +958,7 @@ public class CityGenerator : MonoBehaviour {
 
 
 
-                pWidth = GetWith(EC[numB]);
+                pWidth = GetWidth(EC[numB]);
                 if (pWidth <= 36.05f)
                 {
                     _EC[numB] += 1;
@@ -976,7 +983,7 @@ public class CityGenerator : MonoBehaviour {
                 } while (lp < 300);
 
 
-                pWidth = GetWith(EB[numB]);
+                pWidth = GetWidth(EB[numB]);
                 if (pWidth <= 36.05f)
                 {
                     _EB[numB] += 1;
@@ -1182,14 +1189,17 @@ public class CityGenerator : MonoBehaviour {
 
         int defaultColorIdx = 3;
         int colorIdx = defaultColorIdx;
+        int buildingSize = UnityEngine.Random.Range(1,10);
         if (buildingProfile != null) {
             if (buildingProfile.ipAddress != "Unassigned") {
                 string riskRating = buildingProfile.riskRating;
                 colorIdx = colorMap[riskRating];
+                buildingSize = Int32.Parse(buildingProfile.buildingSize);
             }
         }
-        
-
+        //Size Rendering
+        building.transform.localScale = new Vector3(1f, buildingSize/2, 1f);
+        // Debug.Log(buildingSize);
         //Color Rendering
         MeshRenderer myRend;
         myRend = building.GetComponent<MeshRenderer>();
@@ -1239,6 +1249,7 @@ public class CityGenerator : MonoBehaviour {
                 if (UnityEngine.Random.Range(1, 100) <= 25) {
                     CreateLaser(building, colorIdx);
                 }
+                CreateInternalLaser(building, colorIdx);
             }
         }
         else {
@@ -1259,12 +1270,13 @@ public class CityGenerator : MonoBehaviour {
             laserHeight = UnityEngine.Random.Range(140f, 450.0f);
         // Debug.Log(buildingHeight);
         GameObject _go = Resources.Load("Laser") as GameObject;
+
         GameObject laser = (GameObject) Instantiate(_go, new Vector3(0, 0, 0), Quaternion.Euler(0, 90, 0));
         laser.transform.SetParent(building.transform);
         lr = laser.GetComponent<LineRenderer>();
         lr.startWidth = 8f;
         lr.endWidth = 1f;
-        lr.SetPosition(1, new Vector3(0f, 0f, laserHeight ));
+        lr.SetPosition(1, new Vector3(0f, 0f, buildingY ));
         // lr.SetPosition(1, new Vector3(0f, 0f, 200f));
 
         lr.useWorldSpace = false;
@@ -1286,6 +1298,38 @@ public class CityGenerator : MonoBehaviour {
         laser.GetComponent<LineRenderer>().sharedMaterial = newLaserMat;
 
         // Debug.Log(laser);
+    }
+    public void CreateInternalLaser(GameObject building, int idx) {
+        float buildingZ= GetHeight(building);
+        float buildingX= GetWidth(building);
+        float buildingY = GetY(building);
+        int laserTotal = UnityEngine.Random.Range(0, 10);
+        for (int i = 0; i < laserTotal; i++) {
+            //// Internal Laser
+            GameObject _go_internal = Resources.Load("Internal_Laser") as GameObject;
+            GameObject internalLaser = (GameObject) Instantiate(_go_internal, new Vector3(0, 0, 0), Quaternion.Euler(0, 90, 0), building.transform);
+            internalLaser.transform.SetParent(building.transform);
+            LineRenderer lr = internalLaser.GetComponent<LineRenderer>();
+            lr.SetPosition(0, lr.transform.position);
+            Vector3 targetPosition = new Vector3(0f, 0f, buildingY );
+            lr.SetPosition(1, targetPosition);
+            float distance = Vector3.Distance(lr.transform.position, targetPosition);
+            lr.sharedMaterial.mainTextureScale = new Vector2 (distance/3, 1);
+            // lr.startWidth = 8f;
+            // lr.endWidth = 8f;
+
+            //Create Random Position within the Building
+            float randomX = buildingX * UnityEngine.Random.Range(-0.6f, 0.6f);
+            float randomZ = buildingZ * UnityEngine.Random.Range(-0.6f, 0.6f);
+            Vector3 rndPosWithin = new Vector3(randomX, 0f, randomZ);
+            // rndPosWithin = building.transform.TransformPoint(rndPosWithin * .5f);
+            lr.useWorldSpace = false;
+            internalLaser.transform.localRotation = Quaternion.Euler(-90, 0, 0);
+            internalLaser.transform.localPosition = rndPosWithin;
+            Material newInternalLaserMat = _internalLaserMaterials[idx];
+            internalLaser.GetComponent<LineRenderer>().sharedMaterial = newInternalLaserMat;
+        }
+
     }
     public void CreateBuildingsInBlocks()
     {
@@ -1581,7 +1625,7 @@ public class CityGenerator : MonoBehaviour {
                         if (lp > 250) break;
                     } while (lp < 300);
 
-                    pWidth = GetWith(BC[numB]);
+                    pWidth = GetWidth(BC[numB]);
                     if ((init + pWidth) <= (limit + 4))
                     {
                         pB = BC[numB];
@@ -1604,7 +1648,7 @@ public class CityGenerator : MonoBehaviour {
                         if (lp > 250) break;
                     } while (lp < 300);
 
-                    pWidth = GetWith(BR[numB]);
+                    pWidth = GetWidth(BR[numB]);
                     if ((init + pWidth) <= (limit + 4))
                     {
                         pB = BR[numB];
@@ -1627,7 +1671,7 @@ public class CityGenerator : MonoBehaviour {
                         if (lp > 250) break;
                     } while (lp < 300);
 
-                    pWidth = GetWith(BB[numB]);
+                    pWidth = GetWidth(BB[numB]);
                     if ((init + pWidth) <= (limit + 4))
                     {
                         pB = BB[numB];
@@ -1733,7 +1777,7 @@ public class CityGenerator : MonoBehaviour {
                         if (lp > 250) break;
                     } while (lp < 300);
 
-                    pWidth = GetWith(BC[numB]);
+                    pWidth = GetWidth(BC[numB]);
                     if ((init + pWidth) <= (limit + 4))
                     {
                         pB = BC[numB];
@@ -1756,7 +1800,7 @@ public class CityGenerator : MonoBehaviour {
                         if (lp > 250) break;
                     } while (lp < 300);
 
-                    pWidth = GetWith(BR[numB]);
+                    pWidth = GetWidth(BR[numB]);
                     if ((init + pWidth) <= (limit + 4))
                     {
                         pB = BR[numB];
@@ -1779,7 +1823,7 @@ public class CityGenerator : MonoBehaviour {
                         if (lp > 250) break;
                     } while (lp < 300);
 
-                    pWidth = GetWith(BB[numB]);
+                    pWidth = GetWidth(BB[numB]);
                     if ((init + pWidth) <= (limit + 4))
                     {
                         pB = BB[numB];
@@ -1875,7 +1919,7 @@ public class CityGenerator : MonoBehaviour {
                     if (lp > 200) break;
                 } while (lp < 300);
 
-                pWidth = GetWith(MB[numB]);
+                pWidth = GetWidth(MB[numB]);
                 if ((init + pWidth) <= (limit + 4))
                 {
                     _MB[numB] += 1;
@@ -1959,7 +2003,7 @@ public class CityGenerator : MonoBehaviour {
                     if (lp > 200) break;
                 } while (lp < 300);
 
-                pWidth = GetWith(MB[numB]);
+                pWidth = GetWidth(MB[numB]);
                 if ((init + pWidth) <= (limit + 4))
                 {
                     _MB[numB] += 1;
@@ -2269,7 +2313,7 @@ public class CityGenerator : MonoBehaviour {
 
         for (int i = 0; i < quantity; i++){
 
-            gw = GetWith(tBuildings[i]);
+            gw = GetWidth(tBuildings[i]);
             if (gw > 0)
             {
                 pScale = 1 + (ajuste / gw);
@@ -2287,7 +2331,7 @@ public class CityGenerator : MonoBehaviour {
 	}
 
 
-	private float GetWith(GameObject building){
+	private float GetWidth(GameObject building){
 
         // Debug.Log(building);
         if (building.transform.GetComponent<MeshFilter>() != null) {
@@ -2421,7 +2465,7 @@ public class CityGenerator : MonoBehaviour {
         }
     }
     void DestroyLasers(){
-        tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == "Laser(Clone)").ToArray();
+        tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == "Laser(Clone)" || g.name == "Internal_Laser(Clone)").ToArray();
         foreach (GameObject obj in tempArray) {
             // Debug.Log(obj.name);
             DestroyImmediate(obj);
