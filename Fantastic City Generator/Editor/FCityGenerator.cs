@@ -814,7 +814,7 @@ public class FCityGenerator : EditorWindow
             Debug.Log ("Calling API...");
             string jsonResponse = CallAPI();
             cityGenerator.TrackChanges(jsonResponse);
-            yield return new EditorWaitForSeconds(500f);
+            yield return new EditorWaitForSeconds(5f);
         }
      }
 }

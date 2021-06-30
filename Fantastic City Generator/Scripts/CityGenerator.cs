@@ -250,7 +250,7 @@ public class CityGenerator : MonoBehaviour {
         int count = 0;
         foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
         {
-
+            bool fatSquaredRequired = false;
             // var subnet = (GameObject) Instantiate(new GameObject(string.Format("Subnet_{0}", count + 1)), new Vector3(0, 0, count*600), Quaternion.Euler(0, 0, 0), cityMaker.transform);
             var subnet = new GameObject(string.Format("Subnet_{0}", count + 1));
             subnet.transform.parent = cityMaker.transform;
@@ -262,6 +262,12 @@ public class CityGenerator : MonoBehaviour {
             //     Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
             // }
             currentSubnet = kvp.Value;
+            foreach (Building profile in currentSubnet){
+                if (profile.type == "Network") {
+                    fatSquaredRequired = true;
+                    break;
+                }
+            }
             currentBuildingIdx = 0;
             // GenerateSubnet();
             GameObject block;
@@ -271,8 +277,8 @@ public class CityGenerator : MonoBehaviour {
 
             int le = largeBlocks.Length;
             nb = UnityEngine.Random.Range(0, le);
-            while (largeBlocks[nb].name.Contains("05") || largeBlocks[nb].name.Contains("01") || largeBlocks[nb].name.Contains("02") || largeBlocks[nb].name.Contains("10")) {
-                nb = UnityEngine.Random.Range(0, le);
+            while (largeBlocks[nb].name.Contains("05") || largeBlocks[nb].name.Contains("01") || largeBlocks[nb].name.Contains("02") || largeBlocks[nb].name.Contains("10")  && (fatSquaredRequired && (largeBlocks[nb].name.Contains("04")))) { 
+                    nb = UnityEngine.Random.Range(0, le);
             }
             block = (GameObject)Instantiate(largeBlocks[nb], new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), subnet.transform);
             block.transform.SetParent(subnet.transform);
@@ -1303,7 +1309,7 @@ public class CityGenerator : MonoBehaviour {
         float buildingZ= GetHeight(building);
         float buildingX= GetWidth(building);
         float buildingY = GetY(building);
-        int laserTotal = UnityEngine.Random.Range(0, 10);
+        int laserTotal = UnityEngine.Random.Range(10, 20);
         for (int i = 0; i < laserTotal; i++) {
             //// Internal Laser
             GameObject _go_internal = Resources.Load("Internal_Laser") as GameObject;
@@ -1311,17 +1317,21 @@ public class CityGenerator : MonoBehaviour {
             internalLaser.transform.SetParent(building.transform);
             LineRenderer lr = internalLaser.GetComponent<LineRenderer>();
             lr.SetPosition(0, lr.transform.position);
-            Vector3 targetPosition = new Vector3(0f, 0f, buildingY );
+            Vector3 targetPosition = new Vector3(0f, 0f, buildingY * UnityEngine.Random.Range(0.7f, 0.90f) );
             lr.SetPosition(1, targetPosition);
             float distance = Vector3.Distance(lr.transform.position, targetPosition);
-            lr.sharedMaterial.mainTextureScale = new Vector2 (distance/3, 1);
+            lr.sharedMaterial.mainTextureScale = new Vector2 (distance/4, 1);
             // lr.startWidth = 8f;
             // lr.endWidth = 8f;
 
             //Create Random Position within the Building
-            float randomX = buildingX * UnityEngine.Random.Range(-0.6f, 0.6f);
-            float randomZ = buildingZ * UnityEngine.Random.Range(-0.6f, 0.6f);
-            Vector3 rndPosWithin = new Vector3(randomX, 0f, randomZ);
+            float randomX = buildingX * UnityEngine.Random.Range(-0.4f, 0.4f);
+            float randomZ = buildingZ * UnityEngine.Random.Range(-0.4f, 0.4f);
+            float randomY = buildingY * UnityEngine.Random.Range(0.02f, 0.07f);
+
+        
+
+            Vector3 rndPosWithin = new Vector3(randomX, randomY, randomZ);
             // rndPosWithin = building.transform.TransformPoint(rndPosWithin * .5f);
             lr.useWorldSpace = false;
             internalLaser.transform.localRotation = Quaternion.Euler(-90, 0, 0);
