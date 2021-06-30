@@ -285,11 +285,11 @@ public class CityGenerator : MonoBehaviour {
             block.transform.SetParent(subnet.transform);
             block.transform.localPosition = Vector3.zero;
 
-            center = new Vector3(0,0,0);
+            // center = new Vector3(0,0,0);
 
-            block = (GameObject)Instantiate(miniBorder, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), subnet.transform);
-            block.transform.SetParent(subnet.transform);
-            block.transform.localPosition = Vector3.zero;
+            // block = (GameObject)Instantiate(miniBorder, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), subnet.transform);
+            // block.transform.SetParent(subnet.transform);
+            // block.transform.localPosition = Vector3.zero;
 
             count++;
             // break;
