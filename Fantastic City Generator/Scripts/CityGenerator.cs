@@ -277,9 +277,10 @@ public class CityGenerator : MonoBehaviour {
 
             int le = largeBlocks.Length;
             nb = UnityEngine.Random.Range(0, le);
-            while (largeBlocks[nb].name.Contains("05") || largeBlocks[nb].name.Contains("01") || largeBlocks[nb].name.Contains("02") || largeBlocks[nb].name.Contains("10")  && (fatSquaredRequired && (largeBlocks[nb].name.Contains("04")))) { 
+            while ((largeBlocks[nb].name.Contains("05") || largeBlocks[nb].name.Contains("01") || largeBlocks[nb].name.Contains("02") || largeBlocks[nb].name.Contains("10"))  || (fatSquaredRequired && (largeBlocks[nb].name.Contains("04")))) {
                     nb = UnityEngine.Random.Range(0, le);
             }
+            Debug.Log(largeBlocks[nb].name);
             block = (GameObject)Instantiate(largeBlocks[nb], new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), subnet.transform);
             block.transform.SetParent(subnet.transform);
             block.transform.localPosition = Vector3.zero;
@@ -1195,7 +1196,7 @@ public class CityGenerator : MonoBehaviour {
 
         int defaultColorIdx = 3;
         int colorIdx = defaultColorIdx;
-        int buildingSize = UnityEngine.Random.Range(1,10);
+        int buildingSize = UnityEngine.Random.Range(2,15);
         if (buildingProfile != null) {
             if (buildingProfile.ipAddress != "Unassigned") {
                 string riskRating = buildingProfile.riskRating;
@@ -1329,7 +1330,7 @@ public class CityGenerator : MonoBehaviour {
             float randomZ = buildingZ * UnityEngine.Random.Range(-0.4f, 0.4f);
             float randomY = buildingY * UnityEngine.Random.Range(0.02f, 0.07f);
 
-        
+
 
             Vector3 rndPosWithin = new Vector3(randomX, randomY, randomZ);
             // rndPosWithin = building.transform.TransformPoint(rndPosWithin * .5f);
