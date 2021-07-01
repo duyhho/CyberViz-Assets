@@ -20,7 +20,7 @@ public class FCityGenerator : EditorWindow
     private bool generateLightmapUVs = false;
     private bool intenseTraffic = false;
 
-    bool randomMode = true;
+    bool randomMode = false;
     bool gameStarted = false;
     //https://dl.dropbox.com/s/xc56hb2qmqb3zq6/Assets%20-%20Modified.json?dl=0
     [MenuItem("Window/Fantastic City Generator")]
@@ -29,7 +29,6 @@ public class FCityGenerator : EditorWindow
 
         FCityGenerator window = (FCityGenerator)EditorWindow.GetWindow(typeof(FCityGenerator));
         window.Show();
-
     }
 
 
@@ -239,12 +238,13 @@ public class FCityGenerator : EditorWindow
         if (EditorApplication.isPlaying)
         {
             EditorGUILayout.LabelField("Current Mode: Play Mode");
+            Debug.Log("Random: " + randomMode);
             if (!randomMode) {
 
                 if (!gameStarted) {
                     Debug.Log("Started Game in Play Mode: API-Based!");
                     gameStarted = true;
-                    cityGenerator.GenerateCustomStreets();
+                    GenerateCity(5);
                     cityGenerator.GenerateCustomBuildings();
                     coroutine = this.StartCoroutine(onCoroutine());
                 }
@@ -255,6 +255,8 @@ public class FCityGenerator : EditorWindow
         }
         else
         {
+            // Debug.Log("Random: " + randomMode);
+
             gameStarted = false;
             EditorGUILayout.LabelField("Current Mode: Editor Mode");
         }
@@ -293,20 +295,20 @@ public class FCityGenerator : EditorWindow
 
         GUILayout.BeginHorizontal("box");
 
-        if (GUILayout.Button("Small")) {
-            GenerateCity(1);
+        // if (GUILayout.Button("Small")) {
+        //     GenerateCity(1);
 
-        }
+        // }
 
 
-        if (GUILayout.Button("Medium"))
-            GenerateCity(2);
+        // if (GUILayout.Button("Medium"))
+        //     GenerateCity(2);
 
-        if (GUILayout.Button("Large"))
-            GenerateCity(3);
+        // if (GUILayout.Button("Large"))
+        //     GenerateCity(3);
 
-        if (GUILayout.Button("Very Large"))
-            GenerateCity(4);
+        // if (GUILayout.Button("Very Large"))
+        //     GenerateCity(4);
 
         if (GUILayout.Button("Custom (API Call)"))
             GenerateCity(5);
@@ -363,7 +365,7 @@ public class FCityGenerator : EditorWindow
             if (!GameObject.Find("Marcador")) return;
             // cityGenerator.StopTracking();
             cityGenerator.DestroyBuildings();
-            randomMode = true;
+            randomMode = false;
             this.StopCoroutine(coroutine);
         }
 
