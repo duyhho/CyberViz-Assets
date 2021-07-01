@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System.Linq;
 public class APICall : MonoBehaviour
 {
+    Coroutine coroutine = null;
     [Serializable]
     public class Building
     {
@@ -56,17 +57,20 @@ public class APICall : MonoBehaviour
     private CityInfo cityInfo;
     void Start()
     {
-        cityInfo = GetBuildings();
-        subnetGroups = GetSubnetGroups(cityInfo);
+        // cityInfo = GetBuildings();
+        // subnetGroups = GetSubnetGroups(cityInfo);
         
-        foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
-        {
-            //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
-            Debug.Log(string.Format("Key = {0}", kvp.Key));
-            foreach(var x in kvp.Value) {
-                Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
-            }
-        }
+        // foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
+        // {
+        //     //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
+        //     Debug.Log(string.Format("Key = {0}", kvp.Key));
+        //     foreach(var x in kvp.Value) {
+        //         Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
+        //     }
+        // }
+
+        coroutine = StartCoroutine(onCoroutine());
+
     }
     public Dictionary<string, List<Building>> GetSubnetGroups(CityInfo info){
         Dictionary<string, List<Building>> cityDict = new Dictionary<string, List<Building>>();
@@ -135,5 +139,39 @@ public class APICall : MonoBehaviour
         //     // }
  
         //  }
+    }
+    public string CallAPI()
+    {
+        string[] apiURLs = new string[] {
+        "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0",
+        "https://dl.dropbox.com/s/xc56hb2qmqb3zq6/Assets%20-%20Modified.json?dl=0",
+        "https://dl.dropbox.com/s/bu7uwvm0b8olw41/Assets%20-%20Modified-v2.json?dl=0"
+        };
+        //Valid: "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0"
+        //Sample: https://dl.dropbox.com/s/fbh6jbyzrf86g0x/Assets-sample.json?dl=0
+        int randIdx = UnityEngine.Random.Range(0, 3);
+        Debug.Log(apiURLs[randIdx]);
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiURLs[randIdx]);
+        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+        StreamReader reader = new StreamReader(response.GetResponseStream());
+        string jsonResponse = reader.ReadToEnd();
+        Debug.Log(jsonResponse);
+        return jsonResponse;
+
+    }
+    IEnumerator onCoroutine()
+    {
+        while(true)
+        {
+            Debug.Log ("Calling API...");
+            string jsonResponse = CallAPI();
+            // TrackChanges(jsonResponse);
+            yield return new WaitForSeconds(5f);
+        }
+    }
+    public void StopTracking(){
+        if (coroutine != null) {
+            StopCoroutine(coroutine);
+        }
     }
 }

@@ -19,21 +19,21 @@ public class FCityGenerator : EditorWindow
 
     private bool generateLightmapUVs = false;
     private bool intenseTraffic = false;
-    bool randomMode = true;
 
+    bool randomMode = true;
+    bool gameStarted = false;
     //https://dl.dropbox.com/s/xc56hb2qmqb3zq6/Assets%20-%20Modified.json?dl=0
     [MenuItem("Window/Fantastic City Generator")]
     static void Init()
     {
 
         FCityGenerator window = (FCityGenerator)EditorWindow.GetWindow(typeof(FCityGenerator));
-
         window.Show();
 
     }
 
 
-        [Serializable]
+    [Serializable]
     public class Building
     {
         [JsonProperty(PropertyName = "IP Address")]
@@ -206,8 +206,9 @@ public class FCityGenerator : EditorWindow
         else {
             randomMode = false;
         }
-        if (size == 1)
+        if (size == 1) {
             cityGenerator.GenerateStreetsVerySmall();
+        }
         else if (size == 2)
             cityGenerator.GenerateStreetsSmall();
         else if (size == 3)
@@ -215,8 +216,14 @@ public class FCityGenerator : EditorWindow
         else if (size == 4)
             cityGenerator.GenerateStreetsBig();
         else if (size == 5) {
+            // cityGenerator.gameObject.SetActive(true);
             cityGenerator.GenerateCustomStreets();
-            coroutine = this.StartCoroutine(onCoroutine());
+            if (!EditorApplication.isPlaying) {
+                coroutine = this.StartCoroutine(onCoroutine());
+            }
+            else {
+                Debug.Log("Already in Play Mode! Tracking is Automatic!");
+            }
         }
 
         DestroyImmediate(GameObject.Find("CarContainer"));
@@ -229,6 +236,28 @@ public class FCityGenerator : EditorWindow
 
     void OnGUI()
     {
+        if (EditorApplication.isPlaying)
+        {
+            EditorGUILayout.LabelField("Current Mode: Play Mode");
+            if (!randomMode) {
+
+                if (!gameStarted) {
+                    Debug.Log("Started Game in Play Mode: API-Based!");
+                    gameStarted = true;
+                    cityGenerator.GenerateCustomStreets();
+                    cityGenerator.GenerateCustomBuildings();
+                    coroutine = this.StartCoroutine(onCoroutine());
+                }
+                else {
+
+                }
+            }
+        }
+        else
+        {
+            gameStarted = false;
+            EditorGUILayout.LabelField("Current Mode: Editor Mode");
+        }
         string generateButtonText = (randomMode == true) ? "Generate Buildings (Random)" : "Generate Buildings (API Call)";
 
         GUILayout.Space(10);
@@ -240,9 +269,9 @@ public class FCityGenerator : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
 
-        //cityGenerator = EditorGUILayout.ObjectField(cityGenerator, typeof(CityGenerator), true) as CityGenerator ;
         if (!cityGenerator)
             cityGenerator = AssetDatabase.LoadAssetAtPath("Assets/Fantastic City Generator/Generate.prefab", (typeof(CityGenerator))) as CityGenerator;
+        cityGenerator = EditorGUILayout.ObjectField(cityGenerator, typeof(CityGenerator), true) as CityGenerator ;
 
         LoadAssets();
 
@@ -264,8 +293,10 @@ public class FCityGenerator : EditorWindow
 
         GUILayout.BeginHorizontal("box");
 
-        if (GUILayout.Button("Small"))
+        if (GUILayout.Button("Small")) {
             GenerateCity(1);
+
+        }
 
 
         if (GUILayout.Button("Medium"))
@@ -310,8 +341,10 @@ public class FCityGenerator : EditorWindow
         if (GUILayout.Button(generateButtonText))
         {
             if (!GameObject.Find("Marcador")) return;
-            if (randomMode)
+            if (randomMode) {
+                // coroutine = this.StartCoroutine(onCoroutine());
                 cityGenerator.GenerateAllBuildings();
+            }
             else
                 cityGenerator.GenerateCustomBuildings();
 
@@ -328,6 +361,7 @@ public class FCityGenerator : EditorWindow
         if (GUILayout.Button("Clear Buildings"))
         {
             if (!GameObject.Find("Marcador")) return;
+            // cityGenerator.StopTracking();
             cityGenerator.DestroyBuildings();
             randomMode = true;
             this.StopCoroutine(coroutine);
@@ -812,9 +846,12 @@ public class FCityGenerator : EditorWindow
         while(true)
         {
             Debug.Log ("Calling API...");
+            // Debug.Log(cityGenerator.gameObject);
             string jsonResponse = CallAPI();
             cityGenerator.TrackChanges(jsonResponse);
+
+            // cityGenerator.GenerateAllBuildings();
             yield return new EditorWaitForSeconds(5f);
         }
-     }
+    }
 }

@@ -35,7 +35,7 @@ MonoBehaviour:
   showEditorMainBehavior: 1
   showEditorBloomBehavior: 1
   showEditorLensSurfaceBehavior: 0
-  showEditorLensFlareBehavior: 0
+  showEditorLensFlareBehavior: 1
   showEditorGlareBehavior: 0
   isInitialized: 1
   allowGeometryShaders:
@@ -76,7 +76,7 @@ MonoBehaviour:
   bloomThreshold:
     overrideState: 1
     value:
-      minValue: 0.2
+      minValue: 0.1
       maxValue: 7.9999995
   bloomScattering:
     overrideState: 0
@@ -98,7 +98,7 @@ MonoBehaviour:
     value: {fileID: 0}
   lensSurfaceDiffractionIntensity:
     overrideState: 1
-    value: 1.5
+    value: 1.84
   allowLensFlare:
     overrideState: 1
     value: 1
@@ -136,7 +136,7 @@ MonoBehaviour:
     value: 2
   lensFlareHaloIntensity:
     overrideState: 1
-    value: 0.5
+    value: 1
   lensFlareHaloSize:
     overrideState: 0
     value: 0.4

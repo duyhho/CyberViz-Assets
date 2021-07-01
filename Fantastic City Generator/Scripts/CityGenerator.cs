@@ -89,7 +89,7 @@ public class CityGenerator : MonoBehaviour {
     int currentBuildingIdx = 0;
     int currentSubnetSize = 0;
     bool[] customRendered;
-
+    Coroutine coroutine = null;
     void Awake()
     {
         Debug.Log("Awake!");
@@ -280,7 +280,7 @@ public class CityGenerator : MonoBehaviour {
             while ((largeBlocks[nb].name.Contains("05") || largeBlocks[nb].name.Contains("01") || largeBlocks[nb].name.Contains("02") || largeBlocks[nb].name.Contains("10"))  || (fatSquaredRequired && (largeBlocks[nb].name.Contains("04")))) {
                     nb = UnityEngine.Random.Range(0, le);
             }
-            Debug.Log(largeBlocks[nb].name);
+            // Debug.Log(largeBlocks[nb].name);
             block = (GameObject)Instantiate(largeBlocks[nb], new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0), subnet.transform);
             block.transform.SetParent(subnet.transform);
             block.transform.localPosition = Vector3.zero;
@@ -294,7 +294,9 @@ public class CityGenerator : MonoBehaviour {
             count++;
             // break;
         }
-        // StartCoroutine(onCoroutine());
+        // Debug.Log(gameObject.name);
+        // Debug.Log(gameObject.activeInHierarchy ? "Active" : "Inactive");
+
         DestroyTrees();
 
     }
@@ -616,7 +618,6 @@ public class CityGenerator : MonoBehaviour {
         CreateBuildingsInBlocksCustom(subnetIdx);
         // CreateBuildingsInDoubleCustom(subnetIdx);
     }
-
     public void TrackChanges(string jsonResponse) {
 
         CityInfo info = JsonConvert.DeserializeObject<CityInfo>(jsonResponse);
@@ -628,7 +629,6 @@ public class CityGenerator : MonoBehaviour {
         }
         else {
             Debug.Log("Has Prior Info: Tracking Changes");
-            DestroyLasers();
             foreach (KeyValuePair<string, List<Building>> kvp in newSubnetGroups)
             {
                 Debug.Log(string.Format("Subnet = {0}", kvp.Key));
@@ -641,7 +641,9 @@ public class CityGenerator : MonoBehaviour {
                                 .ToArray();
                     if (tempArray.Length > 0) {
                         GameObject targetBuilding = tempArray[0];
-                        CreateColor(targetBuilding, buildingProfile);
+                        if (subnetGroups[kvp.Key][i].riskRating != buildingProfile.riskRating)
+
+                            CreateColor(targetBuilding, buildingProfile);
                     }
                 }
             }
@@ -1188,6 +1190,8 @@ public class CityGenerator : MonoBehaviour {
 
     }
     public void CreateColor(GameObject building, Building buildingProfile = null){
+        DestroyLasers(building);
+
         Dictionary<string, int> colorMap =  new Dictionary<string, int>();
         colorMap.Add("Low", 0);
         colorMap.Add("Medium", 1);
@@ -1266,6 +1270,7 @@ public class CityGenerator : MonoBehaviour {
     public void CreateLaser(GameObject building, int idx){
         // Debug.Log(building);
         // Vector3 buildingCenter = GetCenter(building);
+
         float buildingHeight = GetHeight(building);
         float buildingY = GetY(building);
         float laserHeight = UnityEngine.Random.Range(140f, 250.0f);
@@ -1724,7 +1729,7 @@ public class CityGenerator : MonoBehaviour {
                     //Random Height
                     pBuilding [index].transform.localScale = new Vector3(pBuilding[index].transform.localScale.x,UnityEngine.Random.Range(1,10),1);
                     // Debug.Log(pBuilding [index].transform.localScale.y);
-                    Debug.Log("Random Height");
+                    // Debug.Log("Random Height");
                     //Color Rendering
                     CreateColor(pBuilding[index]);
             }
@@ -2338,13 +2343,13 @@ public class CityGenerator : MonoBehaviour {
             }    
 
 		}
-        Debug.Log("Finish");
+        // Debug.Log("Finish");
 	}
 
 
 	private float GetWidth(GameObject building){
 
-        // Debug.Log(building);
+        // Debug.Log(building.name);
         if (building.transform.GetComponent<MeshFilter>() != null) {
             // Debug.Log(building.transform.GetComponent<MeshFilter>().sharedMesh);
 
@@ -2475,15 +2480,22 @@ public class CityGenerator : MonoBehaviour {
             // }
         }
     }
-    void DestroyLasers(){
-        tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == "Laser(Clone)" || g.name == "Internal_Laser(Clone)").ToArray();
+    void DestroyLasers(GameObject building){
+        // Debug.Log(building.name);
+        tempArray = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => (g.name == "Laser(Clone)" || g.name == "Internal_Laser(Clone)") && (g.transform.parent.name == building.name)).ToArray();
+        Debug.Log("Length Temp Array: " +  tempArray.Length);
         foreach (GameObject obj in tempArray) {
-            // Debug.Log(obj.name);
+            Debug.Log(obj.transform.parent.name);
             DestroyImmediate(obj);
-            // foreach (Transform child in obj.transform)	{
-
-            // }
         }
+
+        // foreach (Transform child in building.transform)
+        // {
+        //     Transform result = FindTransform(child, "Laser(Clone)");
+        //     if (result != null)
+        //         DestroyImmediate(result);
+        // }
+
     }
 
     void DestroyTrees() {
