@@ -6,6 +6,7 @@ using System.IO;
 using System;
 using Newtonsoft.Json;
 using System.Linq;
+using UnityEngine.Networking;
 public class APICall : MonoBehaviour
 {
     Coroutine coroutine = null;
@@ -58,6 +59,7 @@ public class APICall : MonoBehaviour
     void Start()
     {
         // cityInfo = GetBuildings();
+        StartCoroutine(ProcessRequest("https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0"));
         // subnetGroups = GetSubnetGroups(cityInfo);
         
         // foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
@@ -69,8 +71,35 @@ public class APICall : MonoBehaviour
         //     }
         // }
 
-        coroutine = StartCoroutine(onCoroutine());
+        // coroutine = StartCoroutine(onCoroutine());
 
+    }
+    private IEnumerator ProcessRequest(string uri)
+    {
+        using (UnityWebRequest request = UnityWebRequest.Get(uri))
+        {
+            yield return request.SendWebRequest();
+
+            if (request.isNetworkError)
+            {
+                Debug.Log(request.error);
+            }
+            else
+            {
+                string jsonResponse = request.downloadHandler.text;
+                cityInfo = GetBuildings(jsonResponse);
+                subnetGroups = GetSubnetGroups(cityInfo);
+
+                foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
+                {
+                    //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
+                    Debug.Log(string.Format("Key = {0}", kvp.Key));
+                    foreach(var x in kvp.Value) {
+                        Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
+                    }
+                }
+            }
+        }
     }
     public Dictionary<string, List<Building>> GetSubnetGroups(CityInfo info){
         Dictionary<string, List<Building>> cityDict = new Dictionary<string, List<Building>>();
@@ -104,17 +133,12 @@ public class APICall : MonoBehaviour
         var sortedDict = myList.ToDictionary(x => x.Key, x => x.Value);
         return sortedDict;
     }
-    public CityInfo GetBuildings()
+    public CityInfo GetBuildings(string jsonResponse)
     {
         //Valid: "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0"
         //Sample: https://dl.dropbox.com/s/fbh6jbyzrf86g0x/Assets-sample.json?dl=0
-        HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0");
-        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-        StreamReader reader = new StreamReader(response.GetResponseStream());
-        string jsonResponse = reader.ReadToEnd();
-        Debug.Log(jsonResponse);
-        // CityInfo info = JsonUtility.FromJson<CityInfo>(jsonResponse);
-        CityInfo info = JsonConvert.DeserializeObject<CityInfo>(jsonResponse); 
+
+        CityInfo info = JsonConvert.DeserializeObject<CityInfo>(jsonResponse);
         return info;
     }
 

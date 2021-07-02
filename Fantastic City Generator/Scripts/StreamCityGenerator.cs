@@ -8,7 +8,7 @@ using System.Linq;
 using System;
 using System.Net;
 using Newtonsoft.Json;
-
+using UnityEngine.Networking;
 
 public class StreamCityGenerator : MonoBehaviour {
 
@@ -85,9 +85,11 @@ public class StreamCityGenerator : MonoBehaviour {
     void Start()
     {
         Debug.Log("Start!");
-        GenerateCustomStreets();
-        GenerateCustomBuildings();
-        coroutine = this.StartCoroutine(onCoroutine());
+        StartCoroutine(ProcessRequest("https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0"));
+
+        // cityInfo = GetBuildings();
+        // subnetGroups = GetSubnetGroups(cityInfo);
+
 
     }
     void Update()
@@ -171,35 +173,73 @@ public class StreamCityGenerator : MonoBehaviour {
         var sortedDict = myList.ToDictionary(x => x.Key, x => x.Value);
         return sortedDict;
     }
-    // public void Start() {
-    //     // Get API Call
+    private IEnumerator ProcessRequest(string uri)
+    {
+        using (UnityWebRequest request = UnityWebRequest.Get(uri))
+        {
+            yield return request.SendWebRequest();
 
-    //     cityInfo = GetBuildings();
-    //     subnetGroups = GetSubnetGroups(cityInfo);
+            if (request.isNetworkError)
+            {
+                Debug.Log(request.error);
+            }
+            else
+            {
+                string jsonResponse = request.downloadHandler.text;
+                cityInfo = GetBuildings(jsonResponse);
+                subnetGroups = GetSubnetGroups(cityInfo);
 
-    //     maxBuildings = cityInfo.data.Count;
-    //     Debug.Log(maxBuildings);
-    // }
+                // foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
+                // {
+                //     //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
+                //     Debug.Log(string.Format("Key = {0}", kvp.Key));
+                //     foreach(var x in kvp.Value) {
+                //         Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
+                //     }
+                // }
 
+                GenerateCustomStreets();
+                GenerateCustomBuildings();
+                coroutine = this.StartCoroutine(onCoroutine());
+            }
+        }
+    }
+    private IEnumerator ProcessChanges()
+    {
+        Debug.Log ("Calling API...");
+            // Debug.Log(cityGenerator.gameObject);
+            string[] apiURLs = new string[] {
+            "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0",
+            "https://dl.dropbox.com/s/xc56hb2qmqb3zq6/Assets%20-%20Modified.json?dl=0",
+            "https://dl.dropbox.com/s/bu7uwvm0b8olw41/Assets%20-%20Modified-v2.json?dl=0"
+        };
+        string URL = apiURLs[UnityEngine.Random.Range(0, 3)];
+        using (UnityWebRequest request = UnityWebRequest.Get(URL))
+        {
+            yield return request.SendWebRequest();
 
-    public CityInfo GetBuildings()
+            if (request.isNetworkError)
+            {
+                Debug.Log(request.error);
+            }
+            else
+            {
+                string jsonResponse = request.downloadHandler.text;
+                TrackChanges(jsonResponse);
+                // coroutine = this.StartCoroutine(onCoroutine());
+            }
+        }
+    }
+
+    public CityInfo GetBuildings(string jsonResponse)
     {
         //Valid: "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0"
         //Sample: https://dl.dropbox.com/s/fbh6jbyzrf86g0x/Assets-sample.json?dl=0
-        HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0");
-        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-        StreamReader reader = new StreamReader(response.GetResponseStream());
-        string jsonResponse = reader.ReadToEnd();
-        Debug.Log(jsonResponse);
-        // CityInfo info = JsonUtility.FromJson<CityInfo>(jsonResponse);
-        CityInfo info = JsonConvert.DeserializeObject<CityInfo>(jsonResponse); 
+
+        CityInfo info = JsonConvert.DeserializeObject<CityInfo>(jsonResponse);
         return info;
     }
     public void GenerateCustomStreets() {
-        cityInfo = GetBuildings();
-        subnetGroups = GetSubnetGroups(cityInfo);
-        maxBuildings = cityInfo.data.Count;
-
         if (!cityMaker)
             cityMaker = GameObject.Find("City-Maker");
 
@@ -364,13 +404,11 @@ public class StreamCityGenerator : MonoBehaviour {
      {
         while(true)
         {
-            Debug.Log ("Calling API...");
-            // Debug.Log(cityGenerator.gameObject);
-            string jsonResponse = CallAPI();
-            TrackChanges(jsonResponse);
+
+            StartCoroutine(ProcessChanges());
 
             // cityGenerator.GenerateAllBuildings();
-            yield return new WaitForSeconds(5f);
+            yield return new WaitForSeconds(7f);
         }
     }
     public void TrackChanges(string jsonResponse) {

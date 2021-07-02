@@ -7,7 +7,7 @@ public class CharacterControl : MonoBehaviour
 
     public float speed = 10.0f;
     
-    public float sensitivity = 40f;
+    public float sensitivity = 8f;
     public Transform TopView;
     float xRotation = 0f;
     float yRotation = 0f;
@@ -66,7 +66,7 @@ public class CharacterControl : MonoBehaviour
     void CameraMovement()
     {
         if (cam1.enabled){
-            sensitivity = 35f;
+            sensitivity = 8f;
             var md = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
             md = Vector2.Scale(md, new Vector2(sensitivity * Time.deltaTime, sensitivity * Time.deltaTime));
 
@@ -102,7 +102,7 @@ public class CharacterControl : MonoBehaviour
         }
 
         else {
-            sensitivity = 35f;
+            sensitivity = 15f;
             var md = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
             md = Vector2.Scale(md, new Vector2(sensitivity * Time.deltaTime, sensitivity * Time.deltaTime));
             xRotation -= md.y;

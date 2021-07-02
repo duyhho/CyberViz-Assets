@@ -2321,7 +2321,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 30
-  sensitivity: 20
+  sensitivity: 1
   TopView: {fileID: 1372988856}
 --- !u!124 &124796938188586402
 Behaviour:
