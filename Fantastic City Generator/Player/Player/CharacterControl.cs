@@ -94,7 +94,8 @@ public class CharacterControl : MonoBehaviour
             {
                 yRotation -= speed * Time.deltaTime;
             }
-            transform.localRotation = Quaternion.Euler(0, yRotation, 0);
+            // transform.localRotation = Quaternion.Euler(0, Mathf.Clamp(yRotation, -60, 50), 0);
+            transform.transform.Rotate(Vector3.up * md.x);
 
 
 

@@ -237,22 +237,16 @@ public class FCityGenerator : EditorWindow
     {
         if (EditorApplication.isPlaying)
         {
-            EditorGUILayout.LabelField("Current Mode: Play Mode");
-            Debug.Log("Random: " + randomMode);
-            if (!randomMode) {
-
-                if (!gameStarted) {
-                    Debug.Log("Started Game in Play Mode: API-Based!");
-                    gameStarted = true;
-                    GenerateCity(5);
-                    cityGenerator.GenerateCustomBuildings();
-                    coroutine = this.StartCoroutine(onCoroutine());
-                }
-                else {
-
-                }
-            }
-        }
+            // EditorGUILayout.LabelField("Current Mode: Play Mode");
+            // Debug.Log("Random: " + randomMode);
+            // if (!gameStarted) {
+            //     Debug.Log("Started Game in Play Mode: API-Based!");
+            //     gameStarted = true;
+            //     GenerateCity(5);
+            //     cityGenerator.GenerateCustomBuildings();
+            //     coroutine = this.StartCoroutine(onCoroutine());
+            // }
+    }
         else
         {
             // Debug.Log("Random: " + randomMode);
