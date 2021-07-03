@@ -20,7 +20,7 @@ public class CharacterControl : MonoBehaviour
     void Start()
     {
     
-        Cursor.lockState = CursorLockMode.Locked;
+        // Cursor.lockState = CursorLockMode.Locked;
 
         charController = GetComponent<CharacterController>();
 
@@ -37,7 +37,7 @@ public class CharacterControl : MonoBehaviour
     
     void Update()
     {
-        if (Input.GetKeyDown("space")) {
+        if (Input.GetKeyDown(KeyCode.Tab)) {
             cam1.enabled = !cam1.enabled;
             cam2.enabled = !cam2.enabled;
 
@@ -55,6 +55,7 @@ public class CharacterControl : MonoBehaviour
         }
 
         CameraMovement();
+        // TrackMouseClick();
 
         Vector3 move = (transform.right * Input.GetAxis("Horizontal")) + (transform.forward * Input.GetAxis("Vertical"));
 
@@ -67,48 +68,57 @@ public class CharacterControl : MonoBehaviour
     {
         if (cam1.enabled){
             sensitivity = 8f;
-            var md = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
-            md = Vector2.Scale(md, new Vector2(sensitivity * Time.deltaTime, sensitivity * Time.deltaTime));
-
-            xRotation -= md.y;
-            yRotation += md.x;
-
-            if (Input.GetKey(KeyCode.Q)) {
-                xRotation += speed * Time.deltaTime;
-                // currentCam.Rotate(Vector3.up * speed * Time.deltaTime);
-            }
-
-            if (Input.GetKey(KeyCode.E))
+            if (Input.GetMouseButton(1))
             {
-                xRotation -= speed * Time.deltaTime;
-                // currentCam.Rotate(-Vector3.up * speed * Time.deltaTime);
+                // Debug.Log("Pressed right click.");
+                var md = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
+                md = Vector2.Scale(md, new Vector2(sensitivity * Time.deltaTime, sensitivity * Time.deltaTime));
 
+                xRotation -= md.y;
+                yRotation += md.x;
+
+                // if (Input.GetKey(KeyCode.Q)) {
+                //     xRotation += speed * Time.deltaTime;
+                //     // currentCam.Rotate(Vector3.up * speed * Time.deltaTime);
+                // }
+
+                // if (Input.GetKey(KeyCode.E))
+                // {
+                //     xRotation -= speed * Time.deltaTime;
+                //     // currentCam.Rotate(-Vector3.up * speed * Time.deltaTime);
+
+                // }
+                currentCam.localRotation = Quaternion.Euler(Mathf.Clamp(xRotation, -60, 50), 0, 0);
+
+                // currentCam.Rotate(Vector3.up * md.x);
+                if (Input.GetKey(KeyCode.Z)) {
+                    yRotation += speed * Time.deltaTime;
+                }
+                if (Input.GetKey(KeyCode.C))
+                {
+                    yRotation -= speed * Time.deltaTime;
+                }
+                // transform.localRotation = Quaternion.Euler(0, Mathf.Clamp(yRotation, -60, 50), 0);
+                transform.transform.Rotate(Vector3.up * md.x);
             }
-            currentCam.localRotation = Quaternion.Euler(Mathf.Clamp(xRotation, -60, 50), 0, 0);
-            // transform.transform.Rotate(Vector3.up * md.x);
-            // currentCam.Rotate(Vector3.up * md.x);
-            if (Input.GetKey(KeyCode.Z)) {
-                yRotation += speed * Time.deltaTime;
-            }
-            if (Input.GetKey(KeyCode.C))
-            {
-                yRotation -= speed * Time.deltaTime;
-            }
-            // transform.localRotation = Quaternion.Euler(0, Mathf.Clamp(yRotation, -60, 50), 0);
-            transform.transform.Rotate(Vector3.up * md.x);
+
 
 
 
         }
 
         else {
-            sensitivity = 15f;
-            var md = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
-            md = Vector2.Scale(md, new Vector2(sensitivity * Time.deltaTime, sensitivity * Time.deltaTime));
-            xRotation -= md.y;
-            yRotation += md.x;
-            currentCam.localRotation = Quaternion.Euler(Mathf.Clamp(xRotation, -70, 70), 0, 0);
-            TopView.Rotate(Vector3.up * md.x);
+            if (Input.GetMouseButton(1))
+            {
+                sensitivity = 15f;
+                var md = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
+                md = Vector2.Scale(md, new Vector2(sensitivity * Time.deltaTime, sensitivity * Time.deltaTime));
+                xRotation -= md.y;
+                yRotation += md.x;
+                currentCam.localRotation = Quaternion.Euler(Mathf.Clamp(xRotation, -70, 70), 0, 0);
+                TopView.Rotate(Vector3.up * md.x);
+
+            }
 
             if(Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
             {
@@ -139,8 +149,7 @@ public class CharacterControl : MonoBehaviour
 
             // if (Input.GetKey(KeyCode.E))
             //     currentCam.Rotate(-Vector3.up * speed * Time.deltaTime);
-
-            }
+        }
 
 
 

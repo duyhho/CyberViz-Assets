@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 7700470476615180062}
   - component: {fileID: 8981951515991075597}
   m_Layer: 0
-  m_Name: Cross-Small
-  m_TagString: Untagged
+  m_Name: Cross-Small 1
+  m_TagString: Building
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

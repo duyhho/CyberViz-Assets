@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 6056433366816946121}
   - component: {fileID: 5218793498317028703}
   m_Layer: 0
-  m_Name: Rectangle-Super
-  m_TagString: Untagged
+  m_Name: Rectangle-Super 1
+  m_TagString: Building
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

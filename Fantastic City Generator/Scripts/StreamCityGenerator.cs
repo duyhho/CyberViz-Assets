@@ -9,6 +9,7 @@ using System;
 using System.Net;
 using Newtonsoft.Json;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class StreamCityGenerator : MonoBehaviour {
 
@@ -81,6 +82,7 @@ public class StreamCityGenerator : MonoBehaviour {
     bool[] customRendered;
     Coroutine coroutine = null;
 
+    public Text[] infoTexts;
     Dictionary<string, GameObject> allBuildings = new Dictionary<string, GameObject>() ;
     void Start()
     {
@@ -99,20 +101,21 @@ public class StreamCityGenerator : MonoBehaviour {
         {
             Debug.Log("Update!");
         }
+        TrackMouseClick();
     }
     [Serializable]
     public class Building
     {
         [JsonProperty(PropertyName = "IP Address")]
-        public string ipAddress;
+        public string ipAddress = "Unassigned";
         [JsonProperty(PropertyName = "Subnet")]
         public string subnet;
         [JsonProperty(PropertyName = "Hostname")]
-        public string hostname;
+        public string hostname = "Unassigned";
         [JsonProperty(PropertyName = "Risk Ranking")]
         public string riskRanking;
         [JsonProperty(PropertyName = "Risk Rating")]
-        public string riskRating;
+        public string riskRating = "Unassigned";
         [JsonProperty(PropertyName = "Vulnerabilities")]
         public string vulnerabilities;
         [JsonProperty(PropertyName = "Risk")]
@@ -126,13 +129,13 @@ public class StreamCityGenerator : MonoBehaviour {
         [JsonProperty(PropertyName = "Malware")]
         public string malware;
         [JsonProperty(PropertyName = "Type")]
-        public string type;
+        public string type = "Unassigned";
         [JsonProperty(PropertyName = "Operating System")]
         public string operatingSystem;
         [JsonProperty(PropertyName = "Last Scan")]
         public string lastScan;
         [JsonProperty(PropertyName = "Building Size (sample)")]
-        public string buildingSize;
+        public string buildingSize = "Random";
         [JsonProperty(PropertyName = "Criticality")]
         public string criticality;
     }
@@ -230,7 +233,64 @@ public class StreamCityGenerator : MonoBehaviour {
             }
         }
     }
+    void TrackMouseClick(){
+        if (Input.GetMouseButton(0)) {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
 
+            if(Physics.Raycast (ray, out hit))
+            {
+                if(hit.transform.tag == "Building")
+                {
+                    // Debug.Log ("This is a Building");
+                    // Debug.Log (hit.transform.name);
+
+                    Building targetBuilding = findProfile(hit.transform.name);
+                    infoTexts[0].text = targetBuilding.ipAddress;
+                    infoTexts[1].text = targetBuilding.hostname;
+                    infoTexts[2].text = targetBuilding.riskRating;
+                    if (infoTexts[2].text == "Unassigned"){
+                        infoTexts[2].GetComponent<Text>().color = Color.gray;
+                    }
+                    else if (infoTexts[2].text == "Low"){
+                        infoTexts[2].GetComponent<Text>().color = Color.cyan;
+                    }
+                    else if (infoTexts[2].text == "Medium"){
+                        infoTexts[2].GetComponent<Text>().color = Color.yellow;
+                    }
+                    else if (infoTexts[2].text == "High" || infoTexts[2].text == "Critical"){
+                        infoTexts[2].GetComponent<Text>().color = Color.red;
+                    }
+                    infoTexts[3].text = targetBuilding.type;
+                    infoTexts[4].text = targetBuilding.buildingSize;
+
+
+
+
+                }
+                else {
+                    Debug.Log ("This isn't a Building");
+                }
+            }
+        }
+    }
+    Building findProfile(string gameObjectName){
+        Building defaultProfile = new Building();
+        // buildingProfile.ipAddress = "Unassigned";
+
+        int indexOfIP = gameObjectName.IndexOf(" - ") + 2;
+        string resultIP = gameObjectName.Substring(indexOfIP+1, gameObjectName.Length - 1 - indexOfIP);
+        Debug.Log(resultIP);
+        if (resultIP != "Unassigned") {
+            foreach (Building profile in cityInfo.data) {
+                if (profile.ipAddress == resultIP) {
+                    return profile;
+                }
+            }
+        }
+
+        return defaultProfile;
+    }
     public CityInfo GetBuildings(string jsonResponse)
     {
         //Valid: "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0"
@@ -413,8 +473,8 @@ public class StreamCityGenerator : MonoBehaviour {
     }
     public void TrackChanges(string jsonResponse) {
 
-        CityInfo info = JsonConvert.DeserializeObject<CityInfo>(jsonResponse);
-        Dictionary<string, List<Building>> newSubnetGroups = GetSubnetGroups(info);
+        cityInfo = JsonConvert.DeserializeObject<CityInfo>(jsonResponse);
+        Dictionary<string, List<Building>> newSubnetGroups = GetSubnetGroups(cityInfo);
         Debug.Log("Received!");
         if (subnetGroups.Count == 0) {
             Debug.Log("No Prior Info: Assigning New");

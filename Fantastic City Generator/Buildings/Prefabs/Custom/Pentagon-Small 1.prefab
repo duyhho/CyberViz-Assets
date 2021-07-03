@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 463139432056546937}
   - component: {fileID: -8982180408792212786}
   m_Layer: 0
-  m_Name: Pentagon-Small
-  m_TagString: Untagged
+  m_Name: Pentagon-Small 1
+  m_TagString: Building
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
