@@ -6,15 +6,19 @@ public class CharacterControl : MonoBehaviour
 {
 
     public float speed = 10.0f;
-    
+    public float jumpSpeed = 8f;
+    public float turnSpeed = 90f;
+    private float gravityValue = -9.81f;
     public float sensitivity = 8f;
+    private float vSpeed = 0f;
+
     public Transform TopView;
     float xRotation = 0f;
     float yRotation = 0f;
     private Camera cam1;
     private Camera cam2;
     private Transform currentCam;
-
+    private float jumpHeight = 2.0f;
     private CharacterController charController;
 
     void Start()
@@ -32,7 +36,7 @@ public class CharacterControl : MonoBehaviour
         currentCam = cam1.transform;
 
 
-
+        Debug.Log(gravityValue);
     }
     
     void Update()
@@ -55,13 +59,34 @@ public class CharacterControl : MonoBehaviour
         }
 
         CameraMovement();
-        // TrackMouseClick();
+
 
         Vector3 move = (transform.right * Input.GetAxis("Horizontal")) + (transform.forward * Input.GetAxis("Vertical"));
 
-        charController.SimpleMove((Vector3.ClampMagnitude(move, 1.0f) * (Input.GetKey(KeyCode.LeftShift) ? speed * 1.6f : speed)));
+        // charController.SimpleMove((Vector3.ClampMagnitude(move, 1.0f) * (Input.GetKey(KeyCode.LeftShift) ? speed * 1.6f : speed)));
 
+       
+        transform.Rotate(0, Input.GetAxis("Horizontal") * turnSpeed * Time.deltaTime, 0);
+        Vector3 vel = transform.forward * Input.GetAxis("Vertical") * speed;
+        bool groundedPlayer = charController.isGrounded;
+        if (groundedPlayer && vel.y < 0)
+        {
+            vSpeed = 0f;
+        }
+        if (Input.GetKeyDown("space")  && groundedPlayer){
+            vSpeed += jumpHeight * -3.0f * gravityValue;
+            // charController.Move( vel * Time.deltaTime );
+        }
 
+        vSpeed += gravityValue * Time.deltaTime;
+    
+        // apply gravity acceleration to vertical speed:
+        vel.y = vSpeed; // include vertical speed in vel
+
+        // Debug.Log(vSpeed);
+        // Debug.Log(gravity);
+        // convert vel to displacement and Move the character:
+        charController.Move(vel * Time.deltaTime);
     }
 
     void CameraMovement()
