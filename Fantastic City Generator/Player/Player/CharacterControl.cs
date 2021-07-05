@@ -9,6 +9,8 @@ public class CharacterControl : MonoBehaviour
     public float jumpSpeed = 8f;
     public float turnSpeed = 90f;
     private float gravityValue = -9.81f;
+    // private float gravityValue = 0f;
+
     public float sensitivity = 8f;
     private float vSpeed = 0f;
 
@@ -63,12 +65,6 @@ public class CharacterControl : MonoBehaviour
 
         CameraMovement();
 
-
-        Vector3 move = (transform.right * Input.GetAxis("Horizontal")) + (transform.forward * Input.GetAxis("Vertical"));
-
-        // charController.SimpleMove((Vector3.ClampMagnitude(move, 1.0f) * (Input.GetKey(KeyCode.LeftShift) ? speed * 1.6f : speed)));
-
-       
         transform.Rotate(0, Input.GetAxis("Horizontal") * turnSpeed * Time.deltaTime, 0);
         Vector3 vel = transform.forward * Input.GetAxis("Vertical") * speed;
         bool groundedPlayer = charController.isGrounded;
@@ -76,82 +72,51 @@ public class CharacterControl : MonoBehaviour
         {
             vSpeed = 0f;
         }
-        
+
         TrackFlying();
-        
+
         vSpeed += gravityValue * Time.deltaTime;
 
         // apply gravity acceleration to vertical speed:
         vel.y = vSpeed; // include vertical speed in vel
-        Debug.Log(vSpeed);
+        // Debug.Log(vSpeed);
 
         // Debug.Log(gravity);
         // convert vel to displacement and Move the character:
         charController.Move(vel * Time.deltaTime);
     }
     void TrackFlying() {
-        if (TrackDoubleSpace()){
-            vSpeed = -9.81f;
-            gravityValue = -9.81f;
-        }
-        // else {
-            
-        // }
-        StartCoroutine(TrackSingleSpace());  
-        
-        
+        TrackDoubleSpace();
     }
-    IEnumerator TrackSingleSpace()
-    {
-    
-        //Wait for 4 seconds
-        yield return new WaitForSeconds(2f);
-        if (Input.GetKeyDown("space")) {
-            vSpeed = 0f;
-            }
-            if (Input.GetKey("space")){
-
-                gravityValue = -9.81f;
-                vSpeed += jumpHeight * -0.1f * gravityValue ;
-                gravityValue = 0f;
-
-            }
-
-            if (Input.GetKeyUp("space")) {
-                vSpeed = 0f;
-                gravityValue = 0f;
-            }
-
-            if (Input.GetKeyDown(KeyCode.C)) {
-                vSpeed = 0f;
-            }
-            if (Input.GetKey(KeyCode.C)){
-
-                gravityValue = -9.81f;
-                vSpeed -= jumpHeight * -0.1f * gravityValue ;
-                gravityValue = 0f;
-
-            }
-
-    }
-    bool TrackDoubleSpace(){
+    void TrackDoubleSpace(){
         // count the number of times space is pressed
         if(Input.GetKeyDown(KeyCode.Space))
         {
             pressCount++;
+            vSpeed = 0f;
         }
-    
+        if (Input.GetKey("space")){
+
+            gravityValue = -9.81f;
+            vSpeed += jumpHeight * -0.1f * gravityValue ;
+            gravityValue = 0f;
+            // Debug.Log(vSpeed);
+
+
+        }
+
         // if they pressed at least once
         if(pressCount > 0)
         {
             // count the time passed
             elapsedTime += Time.deltaTime;
-    
+
             // if the time elapsed is greater than the time limit
             if(elapsedTime > doubleTapTime)
-            {   
+            {
+
                 resetPressTimer();
-                return false;
+                // return false;
             }
             else if(pressCount == 2) // otherwise if the press count is 2
             {
@@ -159,21 +124,56 @@ public class CharacterControl : MonoBehaviour
                 // do stuff
                 Debug.Log("Double Space!!!");
                 // gravityValue = -9.81f;
-                resetPressTimer();
-                return true;
+                // return true;
 
             }
         }
-        return false;
+
+        if (Input.GetKeyUp("space")) {
+            if (pressCount != 2) {
+                vSpeed = 0f;
+                gravityValue = 0f;
+                // resetPressTimer();
+            }
+            else {
+                vSpeed = -9.81f;
+                gravityValue = -9.81f;
+                resetPressTimer();
+
+            }
+
+        }
+
+        if (Input.GetKeyDown(KeyCode.C)) {
+            vSpeed = 0f;
+            gravityValue = 0f;
+            Debug.Log(vSpeed);
+
+        }
+        if (Input.GetKey(KeyCode.C)){
+
+            gravityValue = -9.81f;
+            vSpeed -= jumpHeight * -0.1f * gravityValue;
+            // Debug.Log(vSpeed);
+            gravityValue = 0f;
+
+        }
+        if (Input.GetKeyUp(KeyCode.C)) {
+            vSpeed = 0f;
+            gravityValue = 0f;
+            Debug.Log(vSpeed);
+
+        }
+
+        // return false;
     }
     //reset the press count & timer
     private void resetPressTimer(){
         pressCount = 0;
         elapsedTime = 0;
-        if (Input.GetKeyUp("space")) {
-                vSpeed = -9.81f;
-                gravityValue = -9.81f;
-            }
+        // if (Input.GetKeyUp("space")) {
+
+        // }
     }
     void CameraMovement()
     {

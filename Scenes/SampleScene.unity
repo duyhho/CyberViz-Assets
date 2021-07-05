@@ -3369,10 +3369,9 @@ MonoBehaviour:
   speed: 30
   jumpSpeed: 8
   turnSpeed: 90
-  gravityValue: -9.81
   sensitivity: 1
-  vSpeed: 0
   TopView: {fileID: 1372988856}
+  doubleTapTime: 1
 --- !u!124 &124796938188586402
 Behaviour:
   m_ObjectHideFlags: 0
