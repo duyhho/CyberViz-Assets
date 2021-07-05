@@ -8,11 +8,11 @@ public class CharacterControl : MonoBehaviour
     public float speed = 10.0f;
     public float jumpSpeed = 8f;
     public float turnSpeed = 90f;
-    private float gravityValue = -9.81f;
+    public float gravityValue = -9.81f;
     // private float gravityValue = 0f;
 
     public float sensitivity = 8f;
-    private float vSpeed = 0f;
+    public float vSpeed = 0f;
 
     public Transform TopView;
     float xRotation = 0f;

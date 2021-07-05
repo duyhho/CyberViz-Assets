@@ -82,7 +82,16 @@ public class StreamCityGenerator : MonoBehaviour {
     bool[] customRendered;
     Coroutine coroutine = null;
 
+    //UI//
+    public Dropdown riskDropdown;
+    public Dropdown ipDropdown;
+    List<string> ipDropdownItems = new List<string>();
+
     public Text[] infoTexts;
+
+    //Player//
+
+    public GameObject player;
     Dictionary<string, GameObject> allBuildings = new Dictionary<string, GameObject>() ;
     void Start()
     {
@@ -102,6 +111,7 @@ public class StreamCityGenerator : MonoBehaviour {
             Debug.Log("Update!");
         }
         TrackMouseClick();
+
     }
     [Serializable]
     public class Building
@@ -203,6 +213,7 @@ public class StreamCityGenerator : MonoBehaviour {
 
                 GenerateCustomStreets();
                 GenerateCustomBuildings();
+                GenerateUI();
                 coroutine = this.StartCoroutine(onCoroutine());
             }
         }
@@ -228,7 +239,7 @@ public class StreamCityGenerator : MonoBehaviour {
             else
             {
                 string jsonResponse = request.downloadHandler.text;
-                TrackChanges(jsonResponse);
+                // TrackChanges(jsonResponse);
                 // coroutine = this.StartCoroutine(onCoroutine());
             }
         }
@@ -298,6 +309,92 @@ public class StreamCityGenerator : MonoBehaviour {
 
         CityInfo info = JsonConvert.DeserializeObject<CityInfo>(jsonResponse);
         return info;
+    }
+    public void GenerateUI(){
+        riskDropdown.options.Clear();
+        List<string> riskItems = new List<string>();
+        riskItems.Add("Low");
+        riskItems.Add("Medium");
+        riskItems.Add("High");
+        riskItems.Add("Critical");
+        riskItems.Add("All");
+        foreach (var item in riskItems) {
+            riskDropdown.options.Add(new Dropdown.OptionData() {text = item});
+        }
+        // RiskDropdownItemSelected(riskDropdown);
+        riskDropdown.onValueChanged.AddListener(delegate {RiskDropdownItemSelected(riskDropdown); });
+
+        ipDropdown.options.Clear();
+
+
+        ipDropdownItems = new List<string>();
+        foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
+        {
+
+            currentSubnet = kvp.Value;
+            foreach(Building profile in currentSubnet) {
+                ipDropdownItems.Add(profile.ipAddress);
+            }
+        }
+        foreach (var item in ipDropdownItems) {
+            ipDropdown.options.Add(new Dropdown.OptionData() {text = item});
+        }
+        // IPDropdownItemSelected(ipDropdown);
+        ipDropdown.onValueChanged.AddListener(delegate {IPDropdownItemSelected(ipDropdown); });
+    }
+    void IPDropdownItemSelected(Dropdown dropdown) {
+        int index = dropdown.value;
+        string targetIPAddress = dropdown.options[index].text;
+        if (allBuildings.ContainsKey(targetIPAddress)) {
+            GameObject targetBuilding = allBuildings[targetIPAddress];
+            // player.transform.localRotation = Quaternion.Euler(0, targetBuilding.transform.localRotation.y+180, 0);
+            // Vector3 targetPosition = targetBuilding.transform.position + new Vector3(0f, 30f, -GetHeight(targetBuilding)*0.6f);
+            float buildingHeight = GetY(targetBuilding) * targetBuilding.transform.localScale.y;
+            Vector3 targetPosition = targetBuilding.transform.position + new Vector3(0f, buildingHeight + 15f, 0f);
+
+            player.transform.position = targetPosition;
+            CharacterControl control = player.GetComponent<CharacterControl>();
+            control.vSpeed = 0f;
+            // control.g = 0f;
+
+            // CharacterControl control = player.GetComponent(CharacterControl).vSpeed = 0f;
+
+
+        }
+
+    }
+    void RiskDropdownItemSelected(Dropdown dropdown) {
+        int index = dropdown.value;
+        string riskRating = dropdown.options[index].text;
+        ipDropdown.options.Clear();
+        if (riskRating != "All") {
+            ipDropdownItems = new List<string>();
+            foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
+            {
+
+                currentSubnet = kvp.Value;
+                foreach(Building profile in currentSubnet) {
+                    if (profile.riskRating == riskRating) {
+                        ipDropdownItems.Add(profile.ipAddress);
+                    }
+                }
+            }
+        }
+        else {
+            foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
+            {
+
+                currentSubnet = kvp.Value;
+                foreach(Building profile in currentSubnet) {
+                    ipDropdownItems.Add(profile.ipAddress);
+                }
+            }
+        }
+        foreach (var item in ipDropdownItems) {
+            ipDropdown.options.Add(new Dropdown.OptionData() {text = item});
+        }
+        // IPDropdownItemSelected(ipDropdown);
+        ipDropdown.onValueChanged.AddListener(delegate {IPDropdownItemSelected(ipDropdown); });
     }
     public void GenerateCustomStreets() {
         if (!cityMaker)
@@ -505,7 +602,7 @@ public class StreamCityGenerator : MonoBehaviour {
             }
             subnetGroups = newSubnetGroups;
         }
-
+        GenerateUI();
     }
 
     // public static int CompareLand(GameObject go1, GameObject go2)
