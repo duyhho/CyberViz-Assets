@@ -246,7 +246,7 @@ public class StreamCityGenerator : MonoBehaviour {
             else
             {
                 string jsonResponse = request.downloadHandler.text;
-                // TrackChanges(jsonResponse);
+                TrackChanges(jsonResponse);
                 // coroutine = this.StartCoroutine(onCoroutine());
             }
         }
