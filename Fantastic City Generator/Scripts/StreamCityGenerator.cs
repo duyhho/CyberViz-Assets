@@ -93,6 +93,13 @@ public class StreamCityGenerator : MonoBehaviour {
 
     public GameObject player;
     Dictionary<string, GameObject> allBuildings = new Dictionary<string, GameObject>() ;
+
+    // Effects //
+    public GameObject[] effects;
+    GameObject instance = null;
+    bool loopedEffect = false;
+    int selected = 0;
+
     void Start()
     {
         Debug.Log("Start!");
@@ -355,10 +362,7 @@ public class StreamCityGenerator : MonoBehaviour {
             player.transform.position = targetPosition;
             CharacterControl control = player.GetComponent<CharacterControl>();
             control.vSpeed = 0f;
-            // control.g = 0f;
-
-            // CharacterControl control = player.GetComponent(CharacterControl).vSpeed = 0f;
-
+            CreateTeleportEffect();
 
         }
 
@@ -395,6 +399,25 @@ public class StreamCityGenerator : MonoBehaviour {
         }
         // IPDropdownItemSelected(ipDropdown);
         ipDropdown.onValueChanged.AddListener(delegate {IPDropdownItemSelected(ipDropdown); });
+    }
+    void CreateTeleportEffect()
+    {   
+        selected = UnityEngine.Random.Range(0, effects.Length);
+        if (loopedEffect && instance != null)
+        {
+            GameObject.Destroy(instance);
+        }
+
+        instance = (GameObject)GameObject.Instantiate(effects[selected], player.transform.position + new Vector3(2f, 0f, 0f), Quaternion.identity);
+        instance.transform.localScale = new Vector3(2f,2f,2f);
+        if (instance.GetComponent<ParticleAutoDestruction>() != null)
+        {
+            loopedEffect = false;
+        }
+        else
+        {
+            loopedEffect = true;
+        }
     }
     public void GenerateCustomStreets() {
         if (!cityMaker)
