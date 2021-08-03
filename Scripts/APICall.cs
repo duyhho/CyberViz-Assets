@@ -13,15 +13,15 @@ public class APICall : MonoBehaviour
     [Serializable]
     public class Building
     {
-        [JsonProperty(PropertyName = "IP Address")]
+        [JsonProperty(PropertyName = "IP_Address")]
         public string ipAddress;
         [JsonProperty(PropertyName = "Subnet")]
         public string subnet;
         [JsonProperty(PropertyName = "Hostname")]
         public string hostname;
-        [JsonProperty(PropertyName = "Risk Ranking")]
+        [JsonProperty(PropertyName = "Risk_Ranking")]
         public string riskRanking;
-        [JsonProperty(PropertyName = "Risk Rating")]
+        [JsonProperty(PropertyName = "Risk_Rating")]
         public string riskRating;
         [JsonProperty(PropertyName = "Vulnerabilities")]
         public string vulnerabilities;
@@ -37,20 +37,35 @@ public class APICall : MonoBehaviour
         public string malware;
         [JsonProperty(PropertyName = "Type")]
         public string type;
-        [JsonProperty(PropertyName = "Operating System")]
+        [JsonProperty(PropertyName = "Operating_System")]
         public string operatingSystem;
-        [JsonProperty(PropertyName = "Last Scan")]
+        [JsonProperty(PropertyName = "Last_Scan")]
         public string lastScan;
-        [JsonProperty(PropertyName = "Building Size (sample)")]
+        [JsonProperty(PropertyName = "Building_Size")]
         public string buildingSize;
         [JsonProperty(PropertyName = "Criticality")]
         public string criticality;
 
     }
     [Serializable]
+    public class Param {
+        [JsonProperty(PropertyName = "TableName")]
+        public string tableName;
+    }
+    [Serializable]
+    public class Payload {
+        [JsonProperty(PropertyName = "Items")]
+        public List<Building> items;
+        public int count;
+        public int scannedCount;
+    }
+    [Serializable]
     public class CityInfo
     {
-        public List<Building> data;  
+        [JsonProperty(PropertyName = "Params")]
+        public Param param;
+        [JsonProperty(PropertyName = "Payload")]
+        public Payload payload;
     }
     int interval = 1; 
     float nextTime = 0;
@@ -58,8 +73,11 @@ public class APICall : MonoBehaviour
     private CityInfo cityInfo;
     void Start()
     {
-        // cityInfo = GetBuildings();
-        StartCoroutine(ProcessRequest("https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0"));
+        // Kanshi Endpoint
+        // https://wv595bdjq7.execute-api.us-east-1.amazonaws.com/default/readLabyrinthAssets
+        // Duy's sample endpoint
+        // https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0
+        StartCoroutine(ProcessRequest("https://wv595bdjq7.execute-api.us-east-1.amazonaws.com/default/readLabyrinthAssets"));
         // subnetGroups = GetSubnetGroups(cityInfo);
         
         // foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
@@ -87,25 +105,28 @@ public class APICall : MonoBehaviour
             else
             {
                 string jsonResponse = request.downloadHandler.text;
+
+
+                // Debug.Log(jsonResponse);
                 cityInfo = GetBuildings(jsonResponse);
                 subnetGroups = GetSubnetGroups(cityInfo);
 
-                foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
-                {
-                    //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
-                    Debug.Log(string.Format("Key = {0}", kvp.Key));
-                    foreach(var x in kvp.Value) {
-                        Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
-                    }
-                }
+                // foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
+                // {
+                //     //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
+                //     Debug.Log(string.Format("Key = {0}", kvp.Key));
+                //     foreach(var x in kvp.Value) {
+                //         Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
+                //     }
+                // }
             }
         }
     }
     public Dictionary<string, List<Building>> GetSubnetGroups(CityInfo info){
         Dictionary<string, List<Building>> cityDict = new Dictionary<string, List<Building>>();
-        foreach (var x in info.data)
+        foreach (var x in info.payload.items)
         {
-            // Debug.Log(x.subnet);
+            Debug.Log(x.subnet);
             // The Add method throws an exception if the new key is
             // already in the dictionary.
             if (x.ipAddress.Length > 0) {
@@ -139,6 +160,7 @@ public class APICall : MonoBehaviour
         //Sample: https://dl.dropbox.com/s/fbh6jbyzrf86g0x/Assets-sample.json?dl=0
 
         CityInfo info = JsonConvert.DeserializeObject<CityInfo>(jsonResponse);
+        // Debug.Log(info.payload.scannedCount);
         return info;
     }
 

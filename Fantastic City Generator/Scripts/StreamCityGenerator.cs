@@ -103,7 +103,7 @@ public class StreamCityGenerator : MonoBehaviour {
     void Start()
     {
         Debug.Log("Start!");
-        StartCoroutine(ProcessRequest("https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0"));
+        StartCoroutine(ProcessRequest("https://wv595bdjq7.execute-api.us-east-1.amazonaws.com/default/readLabyrinthAssets"));
 
         // cityInfo = GetBuildings();
         // subnetGroups = GetSubnetGroups(cityInfo);
@@ -123,16 +123,16 @@ public class StreamCityGenerator : MonoBehaviour {
     [Serializable]
     public class Building
     {
-        [JsonProperty(PropertyName = "IP Address")]
-        public string ipAddress = "Unassigned";
+        [JsonProperty(PropertyName = "IP_Address")]
+        public string ipAddress;
         [JsonProperty(PropertyName = "Subnet")]
         public string subnet;
         [JsonProperty(PropertyName = "Hostname")]
-        public string hostname = "Unassigned";
-        [JsonProperty(PropertyName = "Risk Ranking")]
+        public string hostname;
+        [JsonProperty(PropertyName = "Risk_Ranking")]
         public string riskRanking;
-        [JsonProperty(PropertyName = "Risk Rating")]
-        public string riskRating = "Unassigned";
+        [JsonProperty(PropertyName = "Risk_Rating")]
+        public string riskRating;
         [JsonProperty(PropertyName = "Vulnerabilities")]
         public string vulnerabilities;
         [JsonProperty(PropertyName = "Risk")]
@@ -146,24 +146,40 @@ public class StreamCityGenerator : MonoBehaviour {
         [JsonProperty(PropertyName = "Malware")]
         public string malware;
         [JsonProperty(PropertyName = "Type")]
-        public string type = "Unassigned";
-        [JsonProperty(PropertyName = "Operating System")]
+        public string type;
+        [JsonProperty(PropertyName = "Operating_System")]
         public string operatingSystem;
-        [JsonProperty(PropertyName = "Last Scan")]
+        [JsonProperty(PropertyName = "Last_Scan")]
         public string lastScan;
-        [JsonProperty(PropertyName = "Building Size (sample)")]
-        public string buildingSize = "Random";
+        [JsonProperty(PropertyName = "Building_Size")]
+        public string buildingSize;
         [JsonProperty(PropertyName = "Criticality")]
         public string criticality;
+
+    }
+    [Serializable]
+    public class Param {
+        [JsonProperty(PropertyName = "TableName")]
+        public string tableName;
+    }
+    [Serializable]
+    public class Payload {
+        [JsonProperty(PropertyName = "Items")]
+        public List<Building> items;
+        public int count;
+        public int scannedCount;
     }
     [Serializable]
     public class CityInfo
     {
-        public List<Building> data;  
+        [JsonProperty(PropertyName = "Params")]
+        public Param param;
+        [JsonProperty(PropertyName = "Payload")]
+        public Payload payload;
     }
     public Dictionary<string, List<Building>> GetSubnetGroups(CityInfo info){
         Dictionary<string, List<Building>> cityDict = new Dictionary<string, List<Building>>();
-        foreach (var x in info.data)
+        foreach (var x in info.payload.items)
         {
             // Debug.Log(x.subnet);
             // The Add method throws an exception if the new key is
@@ -208,16 +224,6 @@ public class StreamCityGenerator : MonoBehaviour {
                 string jsonResponse = request.downloadHandler.text;
                 cityInfo = GetBuildings(jsonResponse);
                 subnetGroups = GetSubnetGroups(cityInfo);
-
-                // foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
-                // {
-                //     //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
-                //     Debug.Log(string.Format("Key = {0}", kvp.Key));
-                //     foreach(var x in kvp.Value) {
-                //         Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
-                //     }
-                // }
-
                 GenerateCustomStreets();
                 GenerateCustomBuildings();
                 GenerateUI();
@@ -230,11 +236,12 @@ public class StreamCityGenerator : MonoBehaviour {
         Debug.Log ("Calling API...");
             // Debug.Log(cityGenerator.gameObject);
             string[] apiURLs = new string[] {
-            "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0",
-            "https://dl.dropbox.com/s/xc56hb2qmqb3zq6/Assets%20-%20Modified.json?dl=0",
-            "https://dl.dropbox.com/s/bu7uwvm0b8olw41/Assets%20-%20Modified-v2.json?dl=0"
+            // "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0",
+            // "https://dl.dropbox.com/s/xc56hb2qmqb3zq6/Assets%20-%20Modified.json?dl=0",
+            // "https://dl.dropbox.com/s/bu7uwvm0b8olw41/Assets%20-%20Modified-v2.json?dl=0"
+            "https://wv595bdjq7.execute-api.us-east-1.amazonaws.com/default/readLabyrinthAssets"
         };
-        string URL = apiURLs[UnityEngine.Random.Range(0, 3)];
+        string URL = apiURLs[UnityEngine.Random.Range(0, apiURLs.Length)];
         using (UnityWebRequest request = UnityWebRequest.Get(URL))
         {
             yield return request.SendWebRequest();
@@ -300,7 +307,7 @@ public class StreamCityGenerator : MonoBehaviour {
         string resultIP = gameObjectName.Substring(indexOfIP+1, gameObjectName.Length - 1 - indexOfIP);
         Debug.Log(resultIP);
         if (resultIP != "Unassigned") {
-            foreach (Building profile in cityInfo.data) {
+            foreach (Building profile in cityInfo.payload.items) {
                 if (profile.ipAddress == resultIP) {
                     return profile;
                 }
@@ -560,25 +567,6 @@ public class StreamCityGenerator : MonoBehaviour {
         CreateBuildingsInSuperBlocksCustom(subnetIdx);
         CreateBuildingsInBlocksCustom(subnetIdx);
         // CreateBuildingsInDoubleCustom(subnetIdx);
-    }
-    public string CallAPI()
-    {
-        string[] apiURLs = new string[] {
-        "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0",
-        "https://dl.dropbox.com/s/xc56hb2qmqb3zq6/Assets%20-%20Modified.json?dl=0",
-        "https://dl.dropbox.com/s/bu7uwvm0b8olw41/Assets%20-%20Modified-v2.json?dl=0"
-        };
-        //Valid: "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0"
-        //Sample: https://dl.dropbox.com/s/fbh6jbyzrf86g0x/Assets-sample.json?dl=0
-        int randIdx = UnityEngine.Random.Range(0, 3);
-        Debug.Log(apiURLs[randIdx]);
-        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiURLs[randIdx]);
-        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-        StreamReader reader = new StreamReader(response.GetResponseStream());
-        string jsonResponse = reader.ReadToEnd();
-        Debug.Log(jsonResponse);
-        return jsonResponse;
-
     }
     IEnumerator onCoroutine()
      {
