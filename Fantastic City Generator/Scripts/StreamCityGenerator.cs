@@ -94,12 +94,15 @@ public class StreamCityGenerator : MonoBehaviour {
     public GameObject player;
     Dictionary<string, GameObject> allBuildings = new Dictionary<string, GameObject>() ;
 
-    // Effects //
+    // Teleport Effects //
     public GameObject[] effects;
     GameObject instance = null;
     bool loopedEffect = false;
     int selected = 0;
 
+    //Color Glow Effect upon Selection //
+
+    GameObject currentSelected;
     void Start()
     {
         Debug.Log("Start!");
@@ -269,7 +272,7 @@ public class StreamCityGenerator : MonoBehaviour {
                 {
                     // Debug.Log ("This is a Building");
                     // Debug.Log (hit.transform.name);
-
+                    GameObject hitBuilding = hit.transform.gameObject;
                     Building targetBuilding = findProfile(hit.transform.name);
                     infoTexts[0].text = targetBuilding.ipAddress;
                     infoTexts[1].text = targetBuilding.hostname;
@@ -289,9 +292,7 @@ public class StreamCityGenerator : MonoBehaviour {
                     infoTexts[3].text = targetBuilding.type;
                     infoTexts[4].text = targetBuilding.buildingSize;
 
-
-
-
+                    Select(hitBuilding);
                 }
                 else {
                     Debug.Log ("This isn't a Building");
@@ -299,13 +300,81 @@ public class StreamCityGenerator : MonoBehaviour {
             }
         }
     }
+    void Select(GameObject building) {
+        MeshRenderer myRend;
+
+        //De-glow the current building
+        if (currentSelected != null) {
+            myRend = currentSelected.GetComponent<MeshRenderer>();
+
+            if (myRend != null) {
+                Debug.Log(myRend);
+
+                Material[] materials = myRend.sharedMaterials;
+                Debug.Log(materials.Length);
+
+                for ( int i = 0; i < materials.Length; i++)
+                {
+                    Debug.Log(materials[i]);
+                    if (materials[i] != null && materials[i].name.Contains("Glow")) {
+
+
+                            int stringIdx = materials[i].name.IndexOf("-Glow");
+                            String newMatName = materials[i].name.Substring(0, stringIdx);
+                            Debug.Log(newMatName);
+                            Material newMat = (Material)Resources.Load(newMatName, typeof(Material));
+                            Debug.Log(newMat);
+                            materials[i] = newMat;
+                            // Debug.Log(materials[i].name);
+
+
+                    }
+
+                }
+                myRend.sharedMaterials = materials;
+            }
+            currentSelected = null;
+        }
+
+
+        //Glow the new building
+        myRend = building.GetComponent<MeshRenderer>();
+
+        if (myRend != null) {
+            Debug.Log(myRend);
+
+            Material[] materials = myRend.sharedMaterials;
+            Debug.Log(materials.Length);
+
+            for ( int i = 0; i < materials.Length; i++)
+            {
+                Debug.Log(materials[i]);
+                if (materials[i] != null && !materials[i].name.Contains("Glow")) {
+                    if (materials[i].name.Contains("Atlas"))
+                    {
+                        Debug.Log(materials[i].name + "-Glow");
+                        Material newMat = (Material)Resources.Load(materials[i].name + "-Glow", typeof(Material));
+                        Debug.Log(newMat);
+                        materials[i] = newMat;
+                        // Debug.Log(materials[i].name);
+                    }
+
+                }
+
+            }
+            myRend.sharedMaterials = materials;
+        }
+        currentSelected = building;
+
+
+    }
     Building findProfile(string gameObjectName){
         Building defaultProfile = new Building();
         // buildingProfile.ipAddress = "Unassigned";
 
         int indexOfIP = gameObjectName.IndexOf(" - ") + 2;
         string resultIP = gameObjectName.Substring(indexOfIP+1, gameObjectName.Length - 1 - indexOfIP);
-        Debug.Log(resultIP);
+        // Debug.Log(resultIP);
         if (resultIP != "Unassigned") {
             foreach (Building profile in cityInfo.payload.items) {
                 if (profile.ipAddress == resultIP) {
@@ -576,7 +645,7 @@ public class StreamCityGenerator : MonoBehaviour {
             StartCoroutine(ProcessChanges());
 
             // cityGenerator.GenerateAllBuildings();
-            yield return new WaitForSeconds(7f);
+            yield return new WaitForSeconds(700f);
         }
     }
     public void TrackChanges(string jsonResponse) {
