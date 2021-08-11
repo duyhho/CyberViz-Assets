@@ -107,8 +107,8 @@ public class StreamCityGenerator : MonoBehaviour {
     void Start()
     {
         Debug.Log("Start! Calling Traffic and Building API");
-        StartCoroutine(ProcessTrafficRequest("https://c6gbn2hqzl.execute-api.us-east-1.amazonaws.com/default/readLabyrinthTraffic"));
-        StartCoroutine(ProcessRequest("https://wv595bdjq7.execute-api.us-east-1.amazonaws.com/default/readLabyrinthAssets"));
+        StartCoroutine(ProcessRequest("https://wv595bdjq7.execute-api.us-east-1.amazonaws.com/default/readLabyrinthAssets",
+                                 "https://c6gbn2hqzl.execute-api.us-east-1.amazonaws.com/default/readLabyrinthTraffic"));
 
         // cityInfo = GetBuildings();
         // subnetGroups = GetSubnetGroups(cityInfo);
@@ -254,9 +254,34 @@ public class StreamCityGenerator : MonoBehaviour {
         // Debug.Log(info.payload.scannedCount);
         return info;
     }
-    private IEnumerator ProcessRequest(string uri)
+    private IEnumerator ProcessRequest(string buildingURL, string trafficURL)
     {
-        using (UnityWebRequest request = UnityWebRequest.Get(uri))
+        using (UnityWebRequest request = UnityWebRequest.Get(trafficURL))
+        {
+            yield return request.SendWebRequest();
+
+            if (request.isNetworkError)
+            {
+                Debug.Log(request.error);
+            }
+            else
+            {
+                string jsonResponse = request.downloadHandler.text;
+
+
+                Debug.Log(jsonResponse);
+                trafficInfo = GetTraffic(jsonResponse);
+
+                foreach (var x in trafficInfo.payload.items)
+                {
+                    Debug.Log(x.source + ": " + x.sourceClassfication);
+                    Debug.Log(x.destination + ": " + x.destinationClassification);
+
+                }
+
+            }
+        }
+        using (UnityWebRequest request = UnityWebRequest.Get(buildingURL))
         {
             yield return request.SendWebRequest();
 
@@ -277,41 +302,6 @@ public class StreamCityGenerator : MonoBehaviour {
         }
     }
 
-    private IEnumerator ProcessTrafficRequest(string uri)
-    {
-        using (UnityWebRequest request = UnityWebRequest.Get(uri))
-        {
-            yield return request.SendWebRequest();
-
-            if (request.isNetworkError)
-            {
-                Debug.Log(request.error);
-            }
-            else
-            {
-                string jsonResponse = request.downloadHandler.text;
-
-
-                // Debug.Log(jsonResponse);
-                trafficInfo = GetTraffic(jsonResponse);
-
-                foreach (var x in trafficInfo.payload.items)
-                {
-                    Debug.Log(x.source + ": " + x.sourceClassfication);
-                    Debug.Log(x.destination + ": " + x.destinationClassification);
-
-                }
-                // foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
-                // {
-                //     //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
-                //     Debug.Log(string.Format("Key = {0}", kvp.Key));
-                //     foreach(var x in kvp.Value) {
-                //         Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
-                //     }
-                // }
-            }
-        }
-    }
     private IEnumerator ProcessChanges()
     {
         Debug.Log ("Calling API...");
@@ -656,9 +646,9 @@ public class StreamCityGenerator : MonoBehaviour {
 
         _laserMaterials = new Material[4];
         _laserMaterials[0] = (Material)Resources.Load("Materials/laserwhite", typeof(Material));
-        _laserMaterials[1] = (Material)Resources.Load("Materials/laseryellow", typeof(Material));
+        _laserMaterials[1] = (Material)Resources.Load("Materials/laserblue", typeof(Material));
         _laserMaterials[2] = (Material)Resources.Load("Materials/laserred", typeof(Material));
-        // _laserMaterials[3] = (Material)Resources.Load("Materials/laserblue", typeof(Material));
+        // _laserMaterials[3] = (Material)Resources.Load("Materials/laseryellow", typeof(Material));
 
         _internalLaserMaterials = new Material[4];
         _internalLaserMaterials[0] = (Material)Resources.Load("Materials/laserblue_dashed", typeof(Material));
@@ -694,7 +684,7 @@ public class StreamCityGenerator : MonoBehaviour {
             int remaining = 0;
             for (int i = 0; i < customRendered.Length; i++) {
                 if (customRendered[i] == false) {
-                    Debug.Log(string.Format("{0} (size {1}) is not rendered", currentSubnet[i].ipAddress, currentSubnet[i].buildingSize));
+                    Debug.Log(string.Format("{0} (size {1}, {2}) is not rendered", currentSubnet[i].ipAddress, currentSubnet[i].buildingSize, currentSubnet[i].type));
                     remaining++;
                 }
             }
@@ -1140,12 +1130,10 @@ public class StreamCityGenerator : MonoBehaviour {
 
                 }
             }
-            //Rendering Laser
+            // Rendering Laser based on Traffic API logic
             // Make sure that you put your prefab in the folder Assets/Resources
             if (colorIdx < 3) {
-                if (UnityEngine.Random.Range(1, 100) <= 25) {
-                    CreateLaser(building, colorIdx);
-                }
+                CreateLaser(building, buildingProfile.ipAddress);
                 CreateInternalLaser(building, colorIdx);
             }
         }
@@ -1153,49 +1141,75 @@ public class StreamCityGenerator : MonoBehaviour {
             Debug.Log("No Mesh Renderer!");
         }
     }
-    public void CreateLaser(GameObject building, int idx){
+    public void CreateLaser(GameObject building, string ipAddress){
         // Debug.Log(building);
         // Vector3 buildingCenter = GetCenter(building);
 
-        float buildingHeight = GetHeight(building);
-        float buildingY = GetY(building);
-        float laserHeight = UnityEngine.Random.Range(140f, 250.0f);
+        // Determine Laser Color based on Traffic API //
+        int idx = -1;
+        Material newLaserMat = null;
+        if (trafficInfo != null) {
+            foreach (var x in trafficInfo.payload.items)
+            {
+                if (x.source == ipAddress || x.destination == ipAddress) {
+                    if (x.sourceClassfication.Contains("Whitelisted") || x.sourceClassfication.Contains("Vendor")
+                        || x.destinationClassification.Contains("Whitelisted") || x.destinationClassification.Contains("Vendor"))
+                        {
+                            idx = 1;
+                            newLaserMat = _laserMaterials[idx];
+                        }
+                    else if (x.sourceClassfication.Contains("Known Bad") || x.sourceClassfication.Contains("Blacklisted")
+                        || x.destinationClassification.Contains("Known Bad") || x.destinationClassification.Contains("Blacklisted")){
+                            idx = 2;
+                            newLaserMat = _laserMaterials[idx];
+                        }
+                }
+            }
+            if (newLaserMat != null) {
+                float buildingHeight = GetHeight(building);
+                float buildingY = GetY(building);
+                float laserHeight = UnityEngine.Random.Range(140f, 250.0f);
 
-        if (buildingY >= 50){
-            laserHeight = UnityEngine.Random.Range(80f, 200.0f);
+                if (buildingY >= 50){
+                    laserHeight = UnityEngine.Random.Range(80f, 200.0f);
+                }
+                else
+                    laserHeight = UnityEngine.Random.Range(140f, 450.0f);
+                // Debug.Log(buildingHeight);
+                GameObject _go = Resources.Load("Laser") as GameObject;
+
+                GameObject laser = (GameObject) Instantiate(_go, new Vector3(0, 0, 0), Quaternion.Euler(0, 90, 0));
+                laser.transform.SetParent(building.transform);
+                lr = laser.GetComponent<LineRenderer>();
+                lr.startWidth = 8f;
+
+                lr.endWidth = 4f;
+                lr.SetPosition(1, new Vector3(0f, 0f, buildingY ));
+                // lr.SetPosition(1, new Vector3(0f, 0f, 200f));
+
+                lr.useWorldSpace = false;
+                // laser.transform.localPosition = buildingCenter;
+                if ((building.name.Contains("QD")) || (building.name.Contains("building"))){
+                    laser.transform.localPosition = new Vector3(0f, buildingY, -0.5f);
+                }
+                else if (building.name.Contains("EC")) {
+                    laser.transform.localPosition = new Vector3(0f, buildingY, -(buildingHeight*0.5f));
+                }
+                else {
+                    laser.transform.localPosition = new Vector3(0f, buildingY, 0f);
+                }
+
+
+                laser.transform.localRotation = Quaternion.Euler(-90, 0, 0);
+
+
+                laser.GetComponent<LineRenderer>().sharedMaterial = newLaserMat;
+
+                // Debug.Log(laser);
+            }
         }
-        else
-            laserHeight = UnityEngine.Random.Range(140f, 450.0f);
-        // Debug.Log(buildingHeight);
-        GameObject _go = Resources.Load("Laser") as GameObject;
-
-        GameObject laser = (GameObject) Instantiate(_go, new Vector3(0, 0, 0), Quaternion.Euler(0, 90, 0));
-        laser.transform.SetParent(building.transform);
-        lr = laser.GetComponent<LineRenderer>();
-        lr.startWidth = 8f;
-        lr.endWidth = 1f;
-        lr.SetPosition(1, new Vector3(0f, 0f, buildingY ));
-        // lr.SetPosition(1, new Vector3(0f, 0f, 200f));
-
-        lr.useWorldSpace = false;
-        // laser.transform.localPosition = buildingCenter;
-        if ((building.name.Contains("QD")) || (building.name.Contains("building"))){
-            laser.transform.localPosition = new Vector3(0f, buildingY, -0.5f);
-        }
-        else if (building.name.Contains("EC")) {
-            laser.transform.localPosition = new Vector3(0f, buildingY, -(buildingHeight*0.5f));
-        }
-        else {
-            laser.transform.localPosition = new Vector3(0f, buildingY, 0f);
-        }
 
 
-        laser.transform.localRotation = Quaternion.Euler(-90, 0, 0);
-
-        Material newLaserMat = _laserMaterials[idx];
-        laser.GetComponent<LineRenderer>().sharedMaterial = newLaserMat;
-
-        // Debug.Log(laser);
     }
     public void CreateInternalLaser(GameObject building, int idx) {
         float buildingZ= GetHeight(building);
