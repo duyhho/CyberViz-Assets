@@ -67,29 +67,56 @@ public class APICall : MonoBehaviour
         [JsonProperty(PropertyName = "Payload")]
         public Payload payload;
     }
-    int interval = 1; 
+
+    [Serializable]
+    public class TrafficItem
+    {
+        [JsonProperty(PropertyName = "Source_Classification")]
+        public string sourceClassfication;
+        [JsonProperty(PropertyName = "Timestamp")]
+        public string timestamp;
+        [JsonProperty(PropertyName = "Destination")]
+        public string destination;
+        [JsonProperty(PropertyName = "Destination_Classification")]
+        public string destinationClassification;
+        [JsonProperty(PropertyName = "Source")]
+        public string source;
+
+    }
+    [Serializable]
+    public class TrafficInfo
+    {
+        [JsonProperty(PropertyName = "Params")]
+        public Param param;
+        [JsonProperty(PropertyName = "Payload")]
+        public TrafficPayload payload;
+    }
+    [Serializable]
+    public class TrafficPayload {
+        [JsonProperty(PropertyName = "Items")]
+        public List<TrafficItem> items;
+        public int count;
+        public int scannedCount;
+    }
+
+
+    int interval = 1;
     float nextTime = 0;
     private Dictionary<string, List<Building>> subnetGroups;
     private CityInfo cityInfo;
+    TrafficInfo trafficInfo;
     void Start()
     {
-        // Kanshi Endpoint
+        // Kanshi Building Endpoint
         // https://wv595bdjq7.execute-api.us-east-1.amazonaws.com/default/readLabyrinthAssets
+        // Kanshi Traffic Endpoint
+        // https://c6gbn2hqzl.execute-api.us-east-1.amazonaws.com/default/readLabyrinthTraffic
         // Duy's sample endpoint
         // https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0
-        StartCoroutine(ProcessRequest("https://wv595bdjq7.execute-api.us-east-1.amazonaws.com/default/readLabyrinthAssets"));
-        // subnetGroups = GetSubnetGroups(cityInfo);
-        
-        // foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
-        // {
-        //     //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
-        //     Debug.Log(string.Format("Key = {0}", kvp.Key));
-        //     foreach(var x in kvp.Value) {
-        //         Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
-        //     }
-        // }
 
-        // coroutine = StartCoroutine(onCoroutine());
+        // StartCoroutine(ProcessRequest("https://wv595bdjq7.execute-api.us-east-1.amazonaws.com/default/readLabyrinthAssets"));
+        StartCoroutine(ProcessTrafficRequest("https://c6gbn2hqzl.execute-api.us-east-1.amazonaws.com/default/readLabyrinthTraffic"));
+        
 
     }
     private IEnumerator ProcessRequest(string uri)
@@ -111,6 +138,41 @@ public class APICall : MonoBehaviour
                 cityInfo = GetBuildings(jsonResponse);
                 subnetGroups = GetSubnetGroups(cityInfo);
 
+                // foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
+                // {
+                //     //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
+                //     Debug.Log(string.Format("Key = {0}", kvp.Key));
+                //     foreach(var x in kvp.Value) {
+                //         Debug.Log(string.Format("Member = {0} - {1}", x.hostname, x.ipAddress));
+                //     }
+                // }
+            }
+        }
+    }
+    private IEnumerator ProcessTrafficRequest(string uri)
+    {
+        using (UnityWebRequest request = UnityWebRequest.Get(uri))
+        {
+            yield return request.SendWebRequest();
+
+            if (request.isNetworkError)
+            {
+                Debug.Log(request.error);
+            }
+            else
+            {
+                string jsonResponse = request.downloadHandler.text;
+
+
+                // Debug.Log(jsonResponse);
+                trafficInfo = GetTraffic(jsonResponse);
+
+                foreach (var x in trafficInfo.payload.items)
+                {
+                    Debug.Log(x.source + ": " + x.sourceClassfication);
+                    Debug.Log(x.destination + ": " + x.destinationClassification);
+
+                }
                 // foreach (KeyValuePair<string, List<Building>> kvp in subnetGroups)
                 // {
                 //     //textBox3.Text += ("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
@@ -160,6 +222,15 @@ public class APICall : MonoBehaviour
         //Sample: https://dl.dropbox.com/s/fbh6jbyzrf86g0x/Assets-sample.json?dl=0
 
         CityInfo info = JsonConvert.DeserializeObject<CityInfo>(jsonResponse);
+        // Debug.Log(info.payload.scannedCount);
+        return info;
+    }
+    public TrafficInfo GetTraffic(string jsonResponse)
+    {
+        //Valid: "https://dl.dropbox.com/s/4z4bzprj1pud3tq/Assets.json?dl=0"
+        //Sample: https://dl.dropbox.com/s/fbh6jbyzrf86g0x/Assets-sample.json?dl=0
+
+        TrafficInfo info = JsonConvert.DeserializeObject<TrafficInfo>(jsonResponse);
         // Debug.Log(info.payload.scannedCount);
         return info;
     }
