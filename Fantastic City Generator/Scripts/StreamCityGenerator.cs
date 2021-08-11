@@ -842,7 +842,7 @@ public class StreamCityGenerator : MonoBehaviour {
 
 
                 pWidth = GetWidth(EC[numB]);
-                if (pWidth <= 36.05f)
+                if (pWidth <= 40.05f)
                 {
                     _EC[numB] += 1;
                     pB = EC[numB];
@@ -1170,7 +1170,7 @@ public class StreamCityGenerator : MonoBehaviour {
                 float buildingY = GetY(building);
                 float laserHeight = UnityEngine.Random.Range(140f, 250.0f);
 
-                if (buildingY >= 50){
+                if (buildingY <= 50){
                     laserHeight = UnityEngine.Random.Range(80f, 200.0f);
                 }
                 else
