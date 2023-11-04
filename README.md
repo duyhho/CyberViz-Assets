@@ -48,9 +48,12 @@ This application transforms the cybersecurity and incident response analysis int
 
 ```
 # Video:
-https://umkc.box.com/s/slbpxov4mim4nuj20u8lm3vh4on7w1iv
+Third-person perspective: https://umkc.box.com/s/slbpxov4mim4nuj20u8lm3vh4on7w1iv 
 
-https://umkc.box.com/s/4rexb0yaadlsjotu0e6avbfyquzitad5
+First-person Perspective https://umkc.box.com/s/4rexb0yaadlsjotu0e6avbfyquzitad5
+
+AR Demo: https://umkc.box.com/s/46w4bk2ngvbp6m1jl0edi39zfgp8907r
+
 ## Specifications:
 
 1) Walls/city 
